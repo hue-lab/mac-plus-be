@@ -5,7 +5,7 @@ services:
     container_name: mac-plus-be
     restart: always
     ports:
-      - "3000:3000"
+      - "5000:5000"
     env_file: .env
     environment:
       - JWT_SECRET=${JWT_SECRET}
@@ -15,7 +15,7 @@ services:
       - MONGODB_PASSWORD=${MONGODB_PASSWORD}
       - MONGODB_NAME=${MONGODB_NAME}
       - MONGODB_PORT=${MONGODB_PORT}
-      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_URL=mac-plus-db
     volumes:
       - ./storage:/opt/app/storage
     networks:
