@@ -1,27 +1,37 @@
 version: '3'
 services:
   backend:
-    image: ghcr.io/andreiya/nestjs-mongo-ecommerce-be/nestjs-mongo-ecommerce-be:develop
-    container_name: ecommerce-be
+    image: ghcr.io/hue-lab/mac-plus-be/image:production
+    container_name: mac-plus-be
     restart: always
     ports:
       - "3000:3000"
+    env_file: .env
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${PORT}
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_USER=${MONGODB_USER}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_NAME=${MONGODB_NAME}
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGODB_URL=${MONGODB_URL}
     volumes:
-      - ./.env:/opt/app/.env
       - ./storage:/opt/app/storage
     networks:
       - node-webapp-network
   database:
-    container_name: ecommerce-db
+    container_name: mac-plus-db
     image: mongo:latest
     volumes:
       - ./data:/data/db
     ports:
       - "27017:27017"
+    env_file: .env
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=parfPass
-      - MONGO_INITDB_DATABASE=shop
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_NAME}
     networks:
       - node-webapp-network
 networks:

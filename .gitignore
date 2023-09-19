@@ -6,6 +6,7 @@
 /db
 .env.local
 .env
+/data
 
 # Logs
 logs
