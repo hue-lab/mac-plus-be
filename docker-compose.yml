@@ -22,6 +22,7 @@ services:
       - node-webapp-network
   database:
     container_name: mac-plus-db
+    restart: always
     image: mongo:latest
     volumes:
       - ./data:/data/db
