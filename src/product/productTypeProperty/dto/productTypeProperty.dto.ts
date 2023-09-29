@@ -1,6 +1,12 @@
-import {IsEnum, IsNotEmpty, IsOptional, IsString, Validate} from "class-validator";
-import {ProductTypePropertyType} from "../../enums/productTypePropertyType.enum.";
-import {IsNumberOrStringArray} from "../../../helpers/pipes/IsNumberOrStringArray";
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Validate,
+} from 'class-validator';
+import { ProductTypePropertyType } from '../../enums/productTypePropertyType.enum.';
+import { IsNumberOrStringArray } from '../../../helpers/pipes/IsNumberOrStringArray';
 
 export class ProductTypePropertyDTO {
   @IsNotEmpty()
@@ -14,15 +20,15 @@ export class ProductTypePropertyDTO {
 
   @IsOptional()
   @IsString()
-  description?: string
+  description?: string;
 
   @IsOptional()
   @IsString()
-  units?: string
+  units?: string;
 
   @IsNotEmpty()
   @IsEnum(ProductTypePropertyType)
-  type: ProductTypePropertyType
+  type: ProductTypePropertyType;
 
   @IsOptional()
   @Validate(IsNumberOrStringArray)

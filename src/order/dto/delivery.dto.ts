@@ -1,7 +1,13 @@
-import {DeliveryMethodDTO} from "../deliveryMethod/dto/deliveryMethod.dto";
-import {IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested} from "class-validator";
-import {Type} from "class-transformer";
-import {DeliveryMethodFieldValueDTO} from "./DeliveryMethodFieldValue.dto";
+import { DeliveryMethodDTO } from '../deliveryMethod/dto/deliveryMethod.dto';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { DeliveryMethodFieldValueDTO } from './DeliveryMethodFieldValue.dto';
 
 export class DeliveryDTO {
   @ValidateNested()

@@ -1,6 +1,6 @@
-import {Body, Controller, Post} from '@nestjs/common';
-import {NotifyService} from "./notify.service";
-import {NotifyDTO} from "./dto/notify.dto";
+import { Body, Controller, Post } from '@nestjs/common';
+import { NotifyService } from './notify.service';
+import { NotifyDTO } from './dto/notify.dto';
 
 @Controller('notify')
 export class NotifyController {
@@ -8,6 +8,6 @@ export class NotifyController {
 
   @Post()
   async notify(@Body() notifyDTO: NotifyDTO) {
-    return this.telegramService.sendMessage(notifyDTO)
+    return this.telegramService.sendMessage(notifyDTO);
   }
 }
