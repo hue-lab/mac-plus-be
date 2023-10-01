@@ -23,9 +23,12 @@ export class ProductTypeController {
     return this.productTypeService.getProductTypePreviews()
   }
 
-  @Get('type/filters')
-  async getProductTypesFilters(@Query() data: { types: string }) {
-    return this.productTypeService.getProductTypesFilters(data.types.split(','));
+  @Get('type/filters/:category')
+  async getProductTypesFilters(@Query() data: { types?: string }, @Param('category', IdValidationPipe) category: string) {
+    if (data.types) {
+      return this.productTypeService.getProductTypesFilters(data.types.split(','));
+    }
+    return this.productTypeService.getCategoryFilters(category);
   }
 
   @Get('type/:id')
