@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import {ProductType, ProductTypeDocument} from "./schema/productType.schema";
@@ -6,12 +6,15 @@ import {ProductTypeDTO} from "./dto/productType.dto";
 import {GetProductsComparisonValue} from "../dto/filterProduct.dto";
 import {ObjectId} from "mongodb";
 import {ProductTypePropertyType} from "../enums/productTypePropertyType.enum.";
+import { CategoryService } from "../../category/category.service";
+import { categoriesTreeToTypes } from "../../shared/functions/categories-tree-to-types.func";
 
 
 @Injectable()
 export class ProductTypeService {
   constructor(
-    @InjectModel('ProductType') private readonly productTypeModel: Model<ProductTypeDocument>
+    @InjectModel('ProductType') private readonly productTypeModel: Model<ProductTypeDocument>,
+    private categoryService: CategoryService,
   ) { }
 
   async getProductTypes(): Promise<ProductType[]> {
@@ -45,6 +48,27 @@ export class ProductTypeService {
         return propertiesMatrix.every(matrixItem => matrixItem.includes(item._id.toString())) && item.showFilter &&  item.type !== ProductTypePropertyType.StringInput;
       });
     });
+  }
+
+  async getCategoryFilters(categoryId: string | undefined): Promise<ProductType[]> {
+    if (!categoryId) {
+      const propertiesMatrix = [];
+      return this.productTypeModel.aggregate([
+        { $lookup : { from: 'producttypeproperties', localField: "properties", foreignField: "_id", as: "properties" } },
+      ]).then(res => {
+        return res.reduce((prev, curr) => {
+          propertiesMatrix.push(curr.properties.map(prop => prop._id.toString()));
+          prev = [...new Map([...prev, ...curr.properties].map(prop => [prop._id.toString(), prop])).values()];
+          return prev;
+        }, []).filter(item => {
+          return propertiesMatrix.every(matrixItem => matrixItem.includes(item._id.toString())) && item.showFilter &&  item.type !== ProductTypePropertyType.StringInput;
+        });
+      });
+    }
+    const category = await this.categoryService.getCategoryById(categoryId);
+    if ( !category) throw new NotFoundException('Category does not exist!');
+    const typesArr: string[] = categoriesTreeToTypes(category);
+    return this.getProductTypesFilters(typesArr);
   }
 
   async getProductType(id: string): Promise<ProductType>{

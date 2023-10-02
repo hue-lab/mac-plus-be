@@ -17,6 +17,10 @@ export class CategoryService {
     return await this.categoryModel.findOne({ root: true }).exec()
   }
 
+  async getCategoryById(categoryId: string): Promise<Category> {
+    return await this.categoryModel.findById(categoryId).exec();
+  }
+
   async createCategory(createCategoryDto: CreateCategoryDto): Promise<Category>{
     const rootCategory = await this.categoryModel.findOne({ root: true })
     if (createCategoryDto.root && rootCategory) {
