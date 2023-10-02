@@ -1,4 +1,4 @@
-import { Category } from "../../category/schema/category.schema";
+import { Category } from '../../category/schema/category.schema';
 
 export function categoriesTreeToTypes(categoryTree: Category): string[] {
   const typesList: Set<string> = new Set();
@@ -6,7 +6,10 @@ export function categoriesTreeToTypes(categoryTree: Category): string[] {
   return Array.from(typesList);
 }
 
-function processCategoryTreeNode(typesList: Set<string>, categoryNode: Category): void {
+function processCategoryTreeNode(
+  typesList: Set<string>,
+  categoryNode: Category,
+): void {
   if (categoryNode.productTypeId) {
     typesList.add(categoryNode.productTypeId);
   }
