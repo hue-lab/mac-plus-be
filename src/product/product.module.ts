@@ -14,9 +14,11 @@ import {ProductTypeService} from "./productType/productType.service";
 import {ProductTypeController} from "./productType/productType.controller";
 import {ProductTypePropertyController} from "./productTypeProperty/productTypeProperty.controller";
 import {ProductTypePropertyService} from "./productTypeProperty/productTypeProperty.service";
+import { CategoryModule } from "../category/category.module";
 
 @Module({
   imports: [
+    CategoryModule,
     MongooseModule.forFeature([
       {name: 'Product', schema: ProductSchema},
       {name: 'Brand', schema: BrandSchema},
@@ -24,7 +26,7 @@ import {ProductTypePropertyService} from "./productTypeProperty/productTypePrope
       {name: 'ProductType', schema: ProductTypeSchema},
       {name: 'ProductTypeProperty', schema: ProductTypePropertySchema},
       {name: 'ProductProps', schema: ProductPropsSchema}
-    ])
+    ]),
   ],
   providers: [
     ProductService,
