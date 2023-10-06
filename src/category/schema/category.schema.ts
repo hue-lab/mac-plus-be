@@ -26,9 +26,6 @@ export class Category {
 
   @Prop({ type: Boolean })
   root?: boolean;
-
-  @Prop({ type: () => [String] })
-  categoryList?: string[];
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
