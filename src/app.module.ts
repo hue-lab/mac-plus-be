@@ -35,7 +35,4 @@ import { StoreConfigModule } from "./storeConfig/storeConfig.module";
   exports: []
 })
 export class AppModule {
-  constructor() {
-    console.log(getMongoDB().URI);
-  }
 }
