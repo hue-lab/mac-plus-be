@@ -1,16 +1,17 @@
 import { CategoryDocument } from "../../category/schema/category.schema";
+import { ObjectId } from "mongodb";
 
-export function nestedCategoriesList(category: CategoryDocument): string[] {
-  const categoriesList: Set<string> = new Set();
+export function nestedCategoriesList(category: CategoryDocument): ObjectId[] {
+  const categoriesList: ObjectId[] = [];
   processCategoryTreeNode(categoriesList, category);
   return Array.from(categoriesList);
 }
 
 function processCategoryTreeNode(
-  categoriesList: Set<string>,
+  categoriesList: ObjectId[],
   categoryNode: CategoryDocument,
 ): void {
-  categoriesList.add(categoryNode._id.toString());
+  categoriesList.push(categoryNode._id);
   if (categoryNode.children && categoryNode.children.length) {
     categoryNode.children.forEach((item: CategoryDocument) => {
       processCategoryTreeNode(categoriesList, item);

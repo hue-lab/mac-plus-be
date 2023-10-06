@@ -143,13 +143,17 @@ export class ProductService {
     }
 
     if (getProductsDTO.baseProperties) {
+      let nestedCategoryList: ObjectId[] | undefined;
+      if (getProductsDTO.baseProperties.categoryId && getProductsDTO.baseProperties.categoryId.$eq) {
+        const comparisonValue = getProductsDTO.baseProperties.categoryId.$eq;
+        const category: CategoryDocument = await this.categoryService.getCategoryById(comparisonValue.toString()) as CategoryDocument;
+        if (!category) throw new NotFoundException(`Category with id ${comparisonValue} not found`);
+        nestedCategoryList = nestedCategoriesList(category);
+      }
       const basePropertiesMatchQuery = Object.entries(getProductsDTO.baseProperties).reduce((prev, curr) => {
         const basePropertyName = curr[0];
         Object.entries(curr[1]).forEach( async ([comparisonOperator, comparisonValue]) => {
-          if (basePropertyName === BasePropertyName.Category && comparisonOperator === ComparisonOperator.eq) {
-            const category: CategoryDocument = await this.categoryService.getCategoryById(comparisonValue.toString()) as CategoryDocument;
-            if (!category) throw new NotFoundException(`Category with id ${comparisonValue} not found`);
-            const nestedCategoryList = nestedCategoriesList(category);
+          if (nestedCategoryList &&  basePropertyName === BasePropertyName.Category && comparisonOperator === ComparisonOperator.eq) {
             prev.push({[basePropertyName]: { [ComparisonOperator.in]: nestedCategoryList } });
           } else {
             prev.push({[basePropertyName]: { [comparisonOperator]: objectIdProperties.has(basePropertyName) ? this.toObjectId(comparisonValue) : comparisonValue } });
