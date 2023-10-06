@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import mongoose, {Model, PipelineStage} from 'mongoose';
 import {InjectModel} from '@nestjs/mongoose';
 import {ObjectId} from 'mongodb';
@@ -8,10 +8,17 @@ import {CreateProductDTO} from "./dto/createProduct.dto";
 import {objectIdProperties} from "./const/object-id-properties.const";
 import {transliterate} from "./transliteration.func";
 import {paginate} from "../helpers/functions/paginate.func";
+import {BasePropertyName, ComparisonOperator} from "./enums/product.enum";
+import {CategoryService} from "../category/category.service";
+import { nestedCategoriesList } from "../shared/functions/nested-categories-list.func";
+import { CategoryDocument } from "../category/schema/category.schema";
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectModel('Product') private readonly productModel: Model<ProductDocument>) {}
+  constructor(
+    @InjectModel('Product') private readonly productModel: Model<ProductDocument>,
+    private categoryService: CategoryService,
+  ) {}
 
   async totalCount(options?) {
     return this.productModel.count(options).exec()
@@ -138,8 +145,15 @@ export class ProductService {
     if (getProductsDTO.baseProperties) {
       const basePropertiesMatchQuery = Object.entries(getProductsDTO.baseProperties).reduce((prev, curr) => {
         const basePropertyName = curr[0];
-        Object.entries(curr[1]).forEach(([comparisonOperator, comparisonValue]) => {
-          prev.push({[basePropertyName]: { [comparisonOperator]: objectIdProperties.has(basePropertyName) ? this.toObjectId(comparisonValue) : comparisonValue } });
+        Object.entries(curr[1]).forEach( async ([comparisonOperator, comparisonValue]) => {
+          if (basePropertyName === BasePropertyName.Category && comparisonOperator === ComparisonOperator.eq) {
+            const category: CategoryDocument = await this.categoryService.getCategoryById(comparisonValue.toString()) as CategoryDocument;
+            if (!category) throw new NotFoundException(`Category with id ${comparisonValue} not found`);
+            const nestedCategoryList = nestedCategoriesList(category);
+            prev.push({[basePropertyName]: { [ComparisonOperator.in]: nestedCategoryList } });
+          } else {
+            prev.push({[basePropertyName]: { [comparisonOperator]: objectIdProperties.has(basePropertyName) ? this.toObjectId(comparisonValue) : comparisonValue } });
+          }
         });
         return prev;
       }, []);
