@@ -1,33 +1,24 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
-import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
-import { Category, CategoryDocument } from "./schema/category.schema";
-import {CreateCategoryDto} from "./dto/create-category.dto";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Category } from "./schema/category.schema";
+import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
-import { addNestedCategoriesList } from "../shared/functions/add-nested-categories-list.func";
 
 @Injectable()
 export class CategoryService {
   constructor(@InjectModel('Category') private readonly categoryModel: Model<Category>) {}
 
   async getCategories(): Promise<Category[]> {
-    const res = await this.categoryModel.find().exec();
-    res.forEach((category: CategoryDocument) => {
-      addNestedCategoriesList(category);
-    })
-    return res;
+    return await this.categoryModel.find().exec();
   }
 
   async getCategoriesTree(): Promise<Category> {
-    const res = await this.categoryModel.findOne({ root: true }).exec();
-    addNestedCategoriesList(res);
-    return res;
+    return await this.categoryModel.findOne({root: true}).exec();
   }
 
   async getCategoryById(categoryId: string): Promise<Category> {
-    const res =  await this.categoryModel.findById(categoryId).exec();
-    addNestedCategoriesList(res);
-    return res;
+    return await this.categoryModel.findById(categoryId).exec();
   }
 
   async createCategory(createCategoryDto: CreateCategoryDto): Promise<Category>{
