@@ -5,10 +5,10 @@ export type PaymentMethodDocument = PaymentMethod & Document;
 
 @Schema()
 export class PaymentMethod {
-  @Prop({type: String})
-  name: string
+  @Prop({ type: String })
+  name: string;
 
-  @Prop({type: String})
+  @Prop({ type: String })
   description: string;
 }
 

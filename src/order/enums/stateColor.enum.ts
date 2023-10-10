@@ -3,5 +3,5 @@ export enum StateColor {
   Warning = 'warning',
   Success = 'success',
   Error = 'error',
-  Info = 'info'
+  Info = 'info',
 }

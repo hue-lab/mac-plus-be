@@ -1,6 +1,13 @@
-import {IsArray, IsBoolean, IsNotEmpty, IsNumber, IsString, ValidateNested} from "class-validator";
-import {Type} from "class-transformer";
-import {ProductPropsDTO} from "./productProps.dto";
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ProductPropsDTO } from './productProps.dto';
 
 export class CreateProductDTO {
   @IsString()
