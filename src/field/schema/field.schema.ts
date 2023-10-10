@@ -5,8 +5,8 @@ export type FieldDocument = Field & Document;
 
 @Schema()
 export class Field {
-  @Prop({type: String})
-  code: string;
+  @Prop({type: String, unique: true, required: true})
+  code!: string;
 
   @Prop({type: String, enum: FieldType})
   type: FieldType;

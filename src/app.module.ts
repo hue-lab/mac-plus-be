@@ -12,6 +12,7 @@ import { NotifyModule } from './notify/notify.module';
 import { ConfigModule } from "@nestjs/config";
 import { getMongoDB } from "../config/getMongoDB";
 import { StoreConfigModule } from "./storeConfig/storeConfig.module";
+import { FieldModule } from "./field/field.module";
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { StoreConfigModule } from "./storeConfig/storeConfig.module";
     StorageModule,
     ArticleModule,
     NotifyModule,
-    StoreConfigModule
+    StoreConfigModule,
+    FieldModule,
   ],
   controllers: [],
   providers: [],

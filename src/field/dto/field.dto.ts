@@ -11,7 +11,5 @@ export class FieldDTO {
   type: FieldType;
 
   @IsNotEmpty()
-  @IsArray({ always: false })
-  @IsString({ each: true, always: false })
   value: string | string[];
 }
