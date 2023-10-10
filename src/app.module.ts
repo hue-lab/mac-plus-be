@@ -13,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
 import { getMongoDB } from '../config/getMongoDB';
 import { StoreConfigModule } from './storeConfig/storeConfig.module';
 import { MenuModule } from './menu/menu.module';
+import { FieldModule } from "./field/field.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MenuModule } from './menu/menu.module';
     ArticleModule,
     NotifyModule,
     StoreConfigModule,
+    FieldModule,
     MenuModule,
   ],
   controllers: [],
