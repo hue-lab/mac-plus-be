@@ -1,7 +1,7 @@
-import { BasePropertyName } from "../enums/product.enum";
+import { BasePropertyName } from '../enums/product.enum';
 
 export const objectIdProperties: Set<string> = new Set([
-    BasePropertyName.Brand,
-    BasePropertyName.Category,
-    BasePropertyName.Id,
+  BasePropertyName.Brand,
+  BasePropertyName.Category,
+  BasePropertyName.Id,
 ]);

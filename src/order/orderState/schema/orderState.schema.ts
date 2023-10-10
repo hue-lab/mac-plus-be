@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import {StateColor} from "../../enums/stateColor.enum";
+import { StateColor } from '../../enums/stateColor.enum';
 
 export type OrderStateDocument = OrderState & Document;
 
@@ -9,7 +9,7 @@ export class OrderState {
   @Prop()
   label: string;
 
-  @Prop({type: String, enum: StateColor})
+  @Prop({ type: String, enum: StateColor })
   color: StateColor;
 
   @Prop()

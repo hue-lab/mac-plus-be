@@ -1,9 +1,9 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import {SchemaTypes} from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { SchemaTypes } from 'mongoose';
 
 export type DiscountConfigDocument = DiscountConfig & Document;
 
-@Schema({ capped: { max: 1, size: 100 }, autoCreate: true})
+@Schema({ capped: { max: 1, size: 100 }, autoCreate: true })
 export class DiscountConfig {
   @Prop({ type: Number })
   minCount: number;
@@ -21,5 +21,5 @@ export class DiscountConfig {
   fixPrice: number;
 }
 
-
-export const DiscountConfigSchema = SchemaFactory.createForClass(DiscountConfig)
+export const DiscountConfigSchema =
+  SchemaFactory.createForClass(DiscountConfig);

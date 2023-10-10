@@ -1,6 +1,6 @@
-import {CustomerDTO} from "../../order/dto/customer.dto";
-import {DeliveryDTO} from "../../order/dto/delivery.dto";
-import {PaymentMethod} from "../../order/paymentMethod/schema/paymentMethod.schema";
+import { CustomerDTO } from '../../order/dto/customer.dto';
+import { DeliveryDTO } from '../../order/dto/delivery.dto';
+import { PaymentMethod } from '../../order/paymentMethod/schema/paymentMethod.schema';
 
 export class NotifyDTO {
   customer?: CustomerDTO;

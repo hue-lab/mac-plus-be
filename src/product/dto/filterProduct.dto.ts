@@ -1,6 +1,13 @@
-import { BasePropertyName, ComparisonOperator } from "../enums/product.enum";
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
-import { Type } from "class-transformer";
+import { BasePropertyName, ComparisonOperator } from '../enums/product.enum';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class GetProductsSortDTO {
   @IsEnum(BasePropertyName)
@@ -19,13 +26,23 @@ export class GetProductsPaginationDTO {
   limit: number;
 }
 
-export type  GetProductsComparison = Partial<Record<ComparisonOperator,  GetProductsComparisonValue>>;
+export type GetProductsComparison = Partial<
+  Record<ComparisonOperator, GetProductsComparisonValue>
+>;
 
-export type  GetProductsComparisonValue = string | number | boolean | (string | number)[];
+export type GetProductsComparisonValue =
+  | string
+  | number
+  | boolean
+  | (string | number)[];
 
-export type GetProductsBasePropertiesDTO = Partial<Record<BasePropertyName,  GetProductsComparison>>;
+export type GetProductsBasePropertiesDTO = Partial<
+  Record<BasePropertyName, GetProductsComparison>
+>;
 
-export type GetProductsCustomPropertiesDTO = Partial<Record<string,  GetProductsComparison>>;
+export type GetProductsCustomPropertiesDTO = Partial<
+  Record<string, GetProductsComparison>
+>;
 
 export class GetProductsDTO {
   @IsString()

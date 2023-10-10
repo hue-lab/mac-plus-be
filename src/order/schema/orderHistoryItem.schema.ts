@@ -1,23 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import {OrderHistoryEnum} from "../enums/orderHistory.enum";
-import {Product} from "../../product/schema/product.schema";
+import { OrderHistoryEnum } from '../enums/orderHistory.enum';
+import { Product } from '../../product/schema/product.schema';
 
 export type OrderHistoryItemDocument = OrderHistoryItem & Document;
 
-@Schema({timestamps: true})
+@Schema({ timestamps: true })
 export class OrderHistoryItem {
-  @Prop({type: [String], enum: OrderHistoryEnum})
+  @Prop({ type: [String], enum: OrderHistoryEnum })
   type: OrderHistoryEnum;
 
   @Prop()
   details?: string;
 
   @Prop()
- time: number;
+  time: number;
 
-  @Prop({type: () => [Product]})
-  products?: Product[]
+  @Prop({ type: () => [Product] })
+  products?: Product[];
 }
 
-export const OrderHistoryItemSchema = SchemaFactory.createForClass(OrderHistoryItem);
+export const OrderHistoryItemSchema =
+  SchemaFactory.createForClass(OrderHistoryItem);

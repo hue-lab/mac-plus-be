@@ -1,4 +1,4 @@
 export interface MoveCategoryDto {
-    categoryId: string;
-    toId: string;
+  categoryId: string;
+  toId: string;
 }

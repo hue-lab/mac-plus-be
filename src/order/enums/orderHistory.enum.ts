@@ -6,5 +6,5 @@ export enum OrderHistoryEnum {
   ShippingStart = 'SHIPPING_START',
   ShippingDone = 'SHIPPING_DONE',
   Paid = 'PAID',
-  Message = 'MESSAGE'
+  Message = 'MESSAGE',
 }
