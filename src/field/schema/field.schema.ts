@@ -11,6 +11,9 @@ export class Field {
   @Prop({type: String, enum: FieldType})
   type: FieldType;
 
+  @Prop({type: String})
+  label: string;
+
   @Prop({type: String || [String]})
   value: string | string[];
 }
