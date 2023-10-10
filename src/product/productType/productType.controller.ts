@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -18,6 +19,7 @@ import { ProductType } from './schema/productType.schema';
 import { Role } from '../../auth/enums/role.enum';
 import { IdValidationPipe } from '../../helpers/pipes/idValidation.pipe';
 import { ProductTypeDTO } from './dto/productType.dto';
+import { Types } from 'mongoose';
 
 @Controller('store/')
 export class ProductTypeController {
@@ -34,10 +36,18 @@ export class ProductTypeController {
   }
 
   @Get('type/filters')
-  async getProductTypesFilters(@Query() data: { types: string }) {
-    return this.productTypeService.getProductTypesFilters(
-      data.types.split(','),
-    );
+  async getProductTypesFilters(
+    @Query() data: { types?: string; category?: string },
+  ) {
+    if (data.types) {
+      return this.productTypeService.getProductTypesFilters(
+        data.types.split(','),
+      );
+    }
+    if (data.category && !Types.ObjectId.isValid(data.category)) {
+      throw new BadRequestException('Id is not valid');
+    }
+    return this.productTypeService.getCategoryFilters(data.category);
   }
 
   @Get('type/:id')

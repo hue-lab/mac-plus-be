@@ -37,6 +37,13 @@ export class CategoryController {
     return categoriesTree;
   }
 
+  @Get('/:id')
+  async getCategoryById(@Param('id', IdValidationPipe) id: string): Promise<Category> {
+    const category = await this.categoryService.getCategoryById(id);
+    if (!category) throw new NotFoundException('Category does not exist!')
+    return category;
+  }
+
   @Post('/')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)

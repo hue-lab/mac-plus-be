@@ -37,7 +37,4 @@ import { MenuModule } from './menu/menu.module';
   exports: [],
 })
 export class AppModule {
-  constructor() {
-    console.log(getMongoDB().URI);
-  }
 }
