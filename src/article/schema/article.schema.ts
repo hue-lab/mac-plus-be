@@ -3,21 +3,21 @@ import { Document } from 'mongoose';
 
 export type ArticleDocument = Article & Document;
 
-@Schema({timestamps: true})
+@Schema({ timestamps: true })
 export class Article {
-  @Prop({type: String})
+  @Prop({ type: String })
   media: string;
 
-  @Prop({type: String})
+  @Prop({ type: String })
   title?: string;
 
-  @Prop({type: String})
+  @Prop({ type: String })
   description: string;
 
-  @Prop({type: String})
+  @Prop({ type: String })
   content: string;
 
-  @Prop({type: [String]})
+  @Prop({ type: [String] })
   tags: string[];
 }
 

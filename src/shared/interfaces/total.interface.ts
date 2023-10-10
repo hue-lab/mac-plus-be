@@ -1,4 +1,4 @@
-import {CreateProductDTO} from "../../product/dto/createProduct.dto";
+import { CreateProductDTO } from '../../product/dto/createProduct.dto';
 
 export interface ITotal {
   products?: IProduct[];

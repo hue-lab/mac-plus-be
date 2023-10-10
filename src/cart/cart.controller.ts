@@ -1,10 +1,18 @@
-import { Controller, Post, Body, Request, Delete, NotFoundException, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Request,
+  Delete,
+  NotFoundException,
+  Param,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CartItemDto } from './dto/cartItem.dto';
 
 @Controller('cart')
 export class CartController {
-  constructor(private cartService: CartService) { }
+  constructor(private cartService: CartService) {}
 
   // @Post('/')
   // async addItemToCart(@Request() req, @Body() itemDTO: CartItemDto) {

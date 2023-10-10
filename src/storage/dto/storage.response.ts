@@ -1,5 +1,5 @@
 export class StorageResponse {
-  url: string
-  name: string
-  shortName: string
+  url: string;
+  name: string;
+  shortName: string;
 }

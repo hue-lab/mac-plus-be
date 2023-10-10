@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
-import { CartItem } from "./cartItem.schema";
+import { CartItem } from './cartItem.schema';
 
 export type CartDocument = Cart & Document;
 

@@ -9,19 +9,21 @@ export class Category {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String})
+  @Prop({ type: String })
   handle: string;
 
-  @Prop({ type: String})
+  @Prop({ type: String })
   description?: string;
 
   @Prop({ type: () => [String] })
   media: string[];
 
-  @Prop([{ type: SchemaTypes.ObjectId, ref: Category.name, autopopulate: true }])
+  @Prop([
+    { type: SchemaTypes.ObjectId, ref: Category.name, autopopulate: true },
+  ])
   children?: Category[];
 
-  @Prop({ type: String})
+  @Prop({ type: String })
   productTypeId?: string;
 
   @Prop({ type: Boolean })
