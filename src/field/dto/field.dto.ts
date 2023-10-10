@@ -10,6 +10,10 @@ export class FieldDTO {
   @IsNotEmpty()
   type: FieldType;
 
+  @IsString()
+  @IsNotEmpty()
+  label: string;
+
   @IsNotEmpty()
   value: string | string[];
 }
