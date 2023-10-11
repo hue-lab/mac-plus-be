@@ -14,7 +14,7 @@ export class Field {
   @Prop({type: String})
   label: string;
 
-  @Prop({type: String || [String]})
+  @Prop({type: () => String || [String]})
   value: string | string[];
 }
 
