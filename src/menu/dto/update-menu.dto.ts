@@ -22,7 +22,7 @@ export class UpdateMenuDto {
   @IsString({ each: true })
   children?: string[];
 
-  @IsOptional()
   @IsString()
-  productTypeId?: string;
+  @IsNotEmpty()
+  code: string;
 }
