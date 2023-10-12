@@ -27,9 +27,9 @@ export class CreateMenuDto {
   @IsString({ each: true })
   media: string[];
 
-  @IsOptional()
   @IsString()
-  productTypeId?: string;
+  @IsNotEmpty()
+  code: string;
 
   @IsOptional()
   @IsBoolean()

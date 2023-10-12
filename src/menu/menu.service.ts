@@ -21,6 +21,10 @@ export class MenuService {
     return await this.menuModel.findById(menuId).exec();
   }
 
+  async getMenuByCode(code: string): Promise<Menu> {
+    return await this.menuModel.findOne({ code }).exec();
+  }
+
   async initialMenu(): Promise<Menu> {
     const initialMenu = await this.menuModel.create({
       name: 'Меню',
@@ -28,7 +32,7 @@ export class MenuService {
       description: null,
       media: [],
       children: [],
-      productTypeId: null,
+      code: 'mainMenu',
       root: true,
     });
     return initialMenu.save();
@@ -133,14 +137,14 @@ export class MenuService {
     description,
     media,
     children,
-    productTypeId,
+    code,
   }: any): UpdateMenuDto {
     return {
       name,
       handle,
       description,
       media,
-      productTypeId,
+      code,
       children: children.map((item) => item._id.toString()),
     };
   }
