@@ -17,9 +17,9 @@ export class DeliveryMethodService {
         {
           $lookup: {
             from: 'paymentmethods',
-            localField: 'paymentMethod',
             foreignField: '_id',
-            as: 'paymentMethod',
+            localField: 'paymentMethods',
+            as: 'paymentMethods',
           },
         },
       ])
@@ -34,9 +34,9 @@ export class DeliveryMethodService {
         {
           $lookup: {
             from: 'paymentmethods',
-            localField: 'paymentMethod',
+            localField: 'paymentMethods',
             foreignField: '_id',
-            as: 'paymentMethod',
+            as: 'paymentMethods',
           },
         },
       ])
