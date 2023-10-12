@@ -44,6 +44,13 @@ export class MenuController {
     return this.menuService.createMenu(createMenuDto);
   }
 
+  @Get('/:id')
+  async getMenuById(@Param('id', IdValidationPipe) id: string): Promise<Menu> {
+    const menu = await this.menuService.getMenuById(id);
+    if (!menu) throw new NotFoundException('Menu does not exist!');
+    return menu;
+  }
+
   @Post('/initial')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
