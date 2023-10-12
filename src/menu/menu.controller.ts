@@ -44,7 +44,14 @@ export class MenuController {
     return this.menuService.createMenu(createMenuDto);
   }
 
-  @Get('/:id')
+  @Get('/:code')
+  async getMenuByCode(@Param('code') code: string): Promise<Menu> {
+    const menu = await this.menuService.getMenuByCode(code);
+    if (!menu) throw new NotFoundException('Menu does not exist!');
+    return menu;
+  }
+
+  @Get('/by/:id')
   async getMenuById(@Param('id', IdValidationPipe) id: string): Promise<Menu> {
     const menu = await this.menuService.getMenuById(id);
     if (!menu) throw new NotFoundException('Menu does not exist!');

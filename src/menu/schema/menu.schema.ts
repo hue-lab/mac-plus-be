@@ -22,7 +22,7 @@ export class Menu {
   children?: Menu[];
 
   @Prop({ type: String })
-  productTypeId?: string;
+  code: string;
 
   @Prop({ type: Boolean })
   root?: boolean;
