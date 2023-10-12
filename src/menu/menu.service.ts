@@ -17,6 +17,10 @@ export class MenuService {
     return await this.menuModel.findOne({ root: true }).exec();
   }
 
+  async getMenuById(menuId: string): Promise<Menu> {
+    return await this.menuModel.findById(menuId).exec();
+  }
+
   async initialMenu(): Promise<Menu> {
     const initialMenu = await this.menuModel.create({
       name: 'Меню',
@@ -41,8 +45,8 @@ export class MenuService {
     if (!createMenuDto.root && !rootMenu) {
       throw new HttpException('Root menu not found', HttpStatus.NOT_FOUND);
     }
-    const newCategory = await this.menuModel.create(createMenuDto);
-    return newCategory.save().then(async (res) => {
+    const newMenu = await this.menuModel.create(createMenuDto);
+    return newMenu.save().then(async (res) => {
       if (!createMenuDto.root) {
         const parentId = createMenuDto.parent
           ? createMenuDto.parent
