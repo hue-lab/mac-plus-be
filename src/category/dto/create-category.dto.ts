@@ -27,6 +27,9 @@ export class CreateCategoryDto {
   @IsString({ each: true })
   media: string[];
 
+  @IsString()
+  icon: string;
+
   @IsOptional()
   @IsString()
   productTypeId?: string;
