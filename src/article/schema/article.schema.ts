@@ -19,6 +19,9 @@ export class Article {
 
   @Prop({ type: [String] })
   tags: string[];
+
+  @Prop({ type: [String] })
+  seoTags: string[];
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
