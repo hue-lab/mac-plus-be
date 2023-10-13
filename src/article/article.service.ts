@@ -35,6 +35,8 @@ export class ArticleService {
       });
     }
 
+    aggregate.push({$sort: {"createdAt": -1} });
+
     if (filterArticleDTO.preview) {
       aggregate.push({ $unset: ['content'] });
     }
