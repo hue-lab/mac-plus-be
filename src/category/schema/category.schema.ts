@@ -18,6 +18,9 @@ export class Category {
   @Prop({ type: () => [String] })
   media: string[];
 
+  @Prop({type: String})
+  icon: string;
+
   @Prop([
     { type: SchemaTypes.ObjectId, ref: Category.name, autopopulate: true },
   ])

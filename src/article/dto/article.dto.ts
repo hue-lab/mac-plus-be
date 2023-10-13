@@ -21,4 +21,9 @@ export class ArticleDTO {
   @IsString({ each: true })
   @IsNotEmpty()
   tags: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  seoTags: string[];
 }

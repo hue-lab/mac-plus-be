@@ -97,12 +97,13 @@ export class CategoryService {
     }
   }
 
-  private getUpdateCategoryDto({name, handle, description, media, children, productTypeId}: any): UpdateCategoryDto {
+  private getUpdateCategoryDto({name, handle, description, media, children, productTypeId, icon}: any): UpdateCategoryDto {
     return {
       name,
       handle,
       description,
       media,
+      icon,
       productTypeId,
       children: children.map(item => item._id.toString()),
     }

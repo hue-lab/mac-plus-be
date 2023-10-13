@@ -26,15 +26,16 @@ export class ArticleService {
         $match: {
           $or: [
             { title: new RegExp(filterArticleDTO.search.toString(), 'i') },
-            {
-              description: new RegExp(filterArticleDTO.search.toString(), 'i'),
-            },
+            { description: new RegExp(filterArticleDTO.search.toString(), 'i') },
             { content: new RegExp(filterArticleDTO.search.toString(), 'i') },
             { tags: new RegExp(filterArticleDTO.search.toString(), 'i') },
+            { seoTags: new RegExp(filterArticleDTO.search.toString(), 'i') },
           ],
         },
       });
     }
+
+    aggregate.push({$sort: {"createdAt": -1} });
 
     if (filterArticleDTO.preview) {
       aggregate.push({ $unset: ['content'] });
@@ -45,6 +46,15 @@ export class ArticleService {
       aggregate.push({
         $match: {
           tags: { $all: tags },
+        },
+      });
+    }
+
+    if (filterArticleDTO.seoTags) {
+      const seoTags: string[] = filterArticleDTO.seoTags.split(',');
+      aggregate.push({
+        $match: {
+          seoTags: { $all: seoTags },
         },
       });
     }

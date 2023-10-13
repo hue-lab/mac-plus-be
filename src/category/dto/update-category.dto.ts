@@ -17,6 +17,9 @@ export class UpdateCategoryDto {
   @IsString({ each: true })
   media: string[];
 
+  @IsString()
+  icon: string;
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

@@ -6,4 +6,5 @@ export class FilterArticleDTO {
   preview: boolean;
   limit: number;
   page: number;
+  seoTags: string;
 }
