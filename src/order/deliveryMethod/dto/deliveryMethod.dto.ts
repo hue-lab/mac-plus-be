@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class DeliveryMethodDTO {
   @IsString()
@@ -13,6 +13,10 @@ export class DeliveryMethodDTO {
   @IsString({ each: true })
   @IsNotEmpty()
   fields: string[];
+
+  @IsNumber()
+  @IsNotEmpty()
+  deliveryPrice: number;
 
   @IsArray()
   @IsString({ each: true })
