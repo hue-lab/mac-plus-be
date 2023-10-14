@@ -54,6 +54,7 @@ export class ProductTypeService {
     return this.productTypeModel
       .aggregate([
         { $match: { _id: { $in: this.toObjectId(typesArr) } } },
+        { $sort: { 'name': 1 } },
         {
           $lookup: {
             from: 'producttypeproperties',
@@ -87,6 +88,11 @@ export class ProductTypeService {
               item.showFilter &&
               item.type !== ProductTypePropertyType.StringInput
             );
+          })
+          .sort((a, b) => {
+            if(a.name < b.name) { return -1; }
+            if(a.name > b.name) { return 1; }
+            return 0;
           });
       });
   }
@@ -98,6 +104,7 @@ export class ProductTypeService {
       const propertiesMatrix = [];
       return this.productTypeModel
         .aggregate([
+          { $sort: { 'name': 1 } },
           {
             $lookup: {
               from: 'producttypeproperties',
@@ -131,6 +138,11 @@ export class ProductTypeService {
                 item.showFilter &&
                 item.type !== ProductTypePropertyType.StringInput
               );
+            })
+            .sort((a, b) => {
+              if(a.name < b.name) { return -1; }
+              if(a.name > b.name) { return 1; }
+              return 0;
             });
         });
     }
