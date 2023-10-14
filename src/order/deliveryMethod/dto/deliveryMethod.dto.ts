@@ -1,6 +1,8 @@
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class DeliveryMethodDTO {
+  _id: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;

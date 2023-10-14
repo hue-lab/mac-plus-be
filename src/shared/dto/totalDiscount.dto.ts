@@ -1,4 +1,6 @@
+import { CartItem } from '../../cart/schema/cartItem.schema';
+
 export class TotalDiscountDTO {
-  productId: any;
-  count: number;
+  products: CartItem[];
+  deliveryMethod: string;
 }

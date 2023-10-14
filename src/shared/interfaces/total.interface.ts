@@ -5,6 +5,7 @@ export interface ITotal {
   orderPrice: number;
   totalItemsCount: number;
   totalDiscount: number;
+  deliveryPrice?: number;
   totalPrice: number;
 }
 

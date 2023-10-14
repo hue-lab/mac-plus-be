@@ -26,7 +26,7 @@ export class DeliveryMethodService {
       .exec();
   }
 
-  async getDeliveryMethodById(id: string) {
+  async getDeliveryMethodById(id: string): Promise<DeliveryMethodDTO[]> {
     const productId = new mongoose.Types.ObjectId(id);
     return this.deliveryMethodModel
       .aggregate([
