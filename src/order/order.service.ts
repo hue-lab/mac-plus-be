@@ -62,7 +62,10 @@ export class OrderService {
     }
     createOrderDTO.orderCode = orderCode;
     const calculation = await this.calculationService.getTotalDiscount(
-      createOrderDTO.cartItems,
+      {
+        products: createOrderDTO.cartItems,
+        deliveryMethod: createOrderDTO.delivery.deliveryMethod._id,
+      },
       true,
     );
     Object.assign(createOrderDTO, {

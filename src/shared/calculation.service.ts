@@ -4,6 +4,8 @@ import { DiscountConfigService } from '../storeConfig/discountConfig/discountCon
 import { ProductService } from '../product/product.service';
 import mongoose from 'mongoose';
 import { ITotal } from './interfaces/total.interface';
+import { DeliveryMethodService } from '../order/deliveryMethod/deliveryMethod.service';
+import { DeliveryMethodDTO } from '../order/deliveryMethod/dto/deliveryMethod.dto';
 
 @Global()
 @Injectable()
@@ -11,29 +13,36 @@ export class CalculationService {
   constructor(
     private readonly discountConfigService: DiscountConfigService,
     private readonly productService: ProductService,
+    private readonly deliveryMethodService: DeliveryMethodService,
   ) {}
 
-  async getTotalDiscount(
-    totalDiscountDTO: TotalDiscountDTO[],
-    isOrder = false,
-  ) {
+  async getTotalDiscount(totalDiscountDTO: TotalDiscountDTO, isOrder = false) {
     let totalItemsCount = 0;
     let fixPriceCount = 0;
     let orderPrice = 0;
     let fixPrice = 0;
+    let deliveryPrice = 0;
 
     const productIds: mongoose.Types.ObjectId[] = [];
-    totalDiscountDTO.forEach((query) => {
+    totalDiscountDTO.products.forEach((query) => {
       const id = query.productId;
-      query.productId = new mongoose.Types.ObjectId(id);
-      productIds.push(query.productId);
+      (query.productId as unknown) = new mongoose.Types.ObjectId(id);
+      productIds.push(query.productId as any);
     });
+
+    if (totalDiscountDTO.deliveryMethod) {
+      const deliveryMethod: DeliveryMethodDTO[] =
+        await this.deliveryMethodService.getDeliveryMethodById(
+          totalDiscountDTO.deliveryMethod,
+        );
+      deliveryPrice = deliveryMethod[0].deliveryPrice;
+    }
 
     const discountConfig = await this.discountConfigService.getDiscountConfig();
     const products = await this.productService.getProductsByIds(productIds);
 
     products.map((product) => {
-      product.count = totalDiscountDTO.find(
+      product.count = totalDiscountDTO.products.find(
         (el) => el.productId.toString() === product._id.toString(),
       ).count;
       delete product._id;
@@ -90,9 +99,10 @@ export class CalculationService {
       orderPrice,
       totalItemsCount,
       totalDiscount: discountByCount + fixPriceDiscount,
+      deliveryPrice,
       totalPrice:
-        Math.ceil((orderPrice - (discountByCount + fixPriceDiscount)) * 100) /
-        100,
+        ((orderPrice - (discountByCount + fixPriceDiscount)) * 100) / 100 +
+        deliveryPrice,
     };
     isOrder ? (result.products = productsList) : null;
     return result;
