@@ -6,7 +6,7 @@ import { TotalDiscountDTO } from './dto/totalDiscount.dto';
 export class CalculationController {
   constructor(private readonly calculationService: CalculationService) {}
   @Post('discount')
-  async getTotalDiscount(@Body() totalDiscountDTO: TotalDiscountDTO[]) {
+  async getTotalDiscount(@Body() totalDiscountDTO: TotalDiscountDTO) {
     return this.calculationService.getTotalDiscount(totalDiscountDTO);
   }
 }

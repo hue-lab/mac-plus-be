@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -38,7 +38,8 @@ import { SharedModule } from '../shared/shared.module';
       { name: 'PaymentMethod', schema: PaymentMethodSchema },
     ]),
     NotifyModule,
-    SharedModule,
+    forwardRef(() => SharedModule),
   ],
+  exports: [DeliveryMethodService],
 })
 export class OrderModule {}
