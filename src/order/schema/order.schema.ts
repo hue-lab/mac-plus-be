@@ -28,9 +28,6 @@ class Delivery {
   @Prop()
   deliveryMethod: DeliveryMethod;
 
-  @Prop({ type: String })
-  deliveryAddress: string;
-
   @Prop({ type: () => [DeliveryMethodFieldValue] })
   deliveryData: DeliveryMethodFieldValue[];
 

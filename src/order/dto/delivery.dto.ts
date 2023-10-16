@@ -15,10 +15,6 @@ export class DeliveryDTO {
   @IsNotEmpty()
   deliveryMethod: DeliveryMethodDTO;
 
-  @IsString()
-  @IsNotEmpty()
-  deliveryAddress: string;
-
   @ValidateNested()
   @Type(() => DeliveryMethodFieldValueDTO)
   @IsArray()
