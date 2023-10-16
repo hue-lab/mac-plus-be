@@ -10,8 +10,8 @@ export class NotifyService {
 
   constructor() {
     this.options = {
-      token: '5977495083:AAGsa3XnTawx8uNhieoTRnBxXg-wbGNZTFE',
-      chatId: '-1001819195635',
+      token: '6464298444:AAFmEl1K7aOgqeM2412nhqfh0anonrkQGbc',
+      chatId: '-4037764153,',
     };
     this.bot = new Telegraf(this.options.token);
   }
