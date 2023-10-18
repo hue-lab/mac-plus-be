@@ -83,17 +83,16 @@ export class CalculationService {
         ? discountConfig.discount
         : 0;
     const fixPriceDiscount =
-      Math.ceil(
-        (fixPrice -
-          (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0)) *
-          100,
-      ) / 100;
+      ((fixPrice -
+        (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0)) *
+        100) /
+      100;
     const discountByCount =
-      Math.ceil(
-        (itemsCountDiscount !== 0
-          ? ((orderPrice - fixPrice) * itemsCountDiscount) / 100
-          : 0) * 100,
-      ) / 100;
+      ((itemsCountDiscount !== 0
+        ? ((orderPrice - fixPrice) * itemsCountDiscount) / 100
+        : 0) *
+        100) /
+      100;
 
     const result: ITotal = {
       orderPrice,
