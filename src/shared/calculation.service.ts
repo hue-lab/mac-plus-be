@@ -83,19 +83,31 @@ export class CalculationService {
         ? discountConfig.discount
         : 0;
     const fixPriceDiscount =
-      fixPrice - (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0);
+      ((fixPrice -
+        (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0)) *
+        100) /
+      100;
     const discountByCount =
-      itemsCountDiscount !== 0
-        ? (orderPrice - fixPrice) * itemsCountDiscount
-        : 0;
+      ((itemsCountDiscount !== 0
+        ? ((orderPrice - fixPrice) * itemsCountDiscount) / 100
+        : 0) *
+        100) /
+      100;
 
     const result: ITotal = {
       orderPrice,
       totalItemsCount,
-      totalDiscount: discountByCount + fixPriceDiscount,
+      totalDiscount:
+        Number(discountByCount.toFixed(2)) +
+        Number(fixPriceDiscount.toFixed(2)),
       deliveryPrice,
-      totalPrice:
-        orderPrice - (discountByCount + fixPriceDiscount) + deliveryPrice,
+      totalPrice: Number(
+        (
+          orderPrice -
+          (discountByCount + fixPriceDiscount) +
+          deliveryPrice
+        ).toFixed(2),
+      ),
     };
     isOrder ? (result.products = productsList) : null;
     return result;
