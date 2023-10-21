@@ -47,7 +47,7 @@ export class CalculationService {
       ).count;
       delete product._id;
       totalItemsCount += product.count;
-      orderPrice += Math.ceil((product.totalPrice * 100) / 100) * product.count;
+      orderPrice += product.totalPrice * product.count;
     });
 
     if (
@@ -83,16 +83,11 @@ export class CalculationService {
         ? discountConfig.discount
         : 0;
     const fixPriceDiscount =
-      ((fixPrice -
-        (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0)) *
-        100) /
-      100;
+      fixPrice - (fixPrice !== 0 ? fixPriceCount * discountConfig.fixPrice : 0);
     const discountByCount =
-      ((itemsCountDiscount !== 0
-        ? ((orderPrice - fixPrice) * itemsCountDiscount) / 100
-        : 0) *
-        100) /
-      100;
+      itemsCountDiscount !== 0
+        ? (orderPrice - fixPrice) * itemsCountDiscount
+        : 0;
 
     const result: ITotal = {
       orderPrice,
@@ -100,8 +95,7 @@ export class CalculationService {
       totalDiscount: discountByCount + fixPriceDiscount,
       deliveryPrice,
       totalPrice:
-        ((orderPrice - (discountByCount + fixPriceDiscount)) * 100) / 100 +
-        deliveryPrice,
+        orderPrice - (discountByCount + fixPriceDiscount) + deliveryPrice,
     };
     isOrder ? (result.products = productsList) : null;
     return result;
