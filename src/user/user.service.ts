@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -34,7 +39,11 @@ export class UserService {
   }
 
   async getUserByName(username: string): Promise<User | undefined> {
-    return this.userModel.findOne({ username });
+    const user = await this.userModel.findOne({ username });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
