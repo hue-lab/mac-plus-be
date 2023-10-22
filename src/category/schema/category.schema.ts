@@ -18,7 +18,7 @@ export class Category {
   @Prop({ type: () => [String] })
   media: string[];
 
-  @Prop({type: String})
+  @Prop({ type: String })
   icon: string;
 
   @Prop([
