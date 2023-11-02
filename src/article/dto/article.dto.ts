@@ -1,4 +1,5 @@
 import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export class ArticleDTO {
   @IsString()
@@ -22,8 +23,6 @@ export class ArticleDTO {
   @IsNotEmpty()
   tags: string[];
 
-  @IsArray()
-  @IsString({ each: true })
   @IsOptional()
-  seoTags: string[];
+  seo: SeoDTO;
 }

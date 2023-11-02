@@ -1,3 +1,5 @@
+import { SeoDTO } from '../../shared/dto/seo.dto';
+
 export class FilterArticleDTO {
   search: string;
   tags: string;
@@ -6,5 +8,5 @@ export class FilterArticleDTO {
   preview: boolean;
   limit: number;
   page: number;
-  seoTags: string;
+  seo?: SeoDTO;
 }

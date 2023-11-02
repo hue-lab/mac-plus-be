@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export type ArticleDocument = Article & Document;
 
@@ -20,8 +21,8 @@ export class Article {
   @Prop({ type: [String] })
   tags: string[];
 
-  @Prop({ type: [String] })
-  seoTags: string[];
+  @Prop()
+  seo?: SeoDTO;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
