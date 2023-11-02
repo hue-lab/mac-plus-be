@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductPropsDTO } from './productProps.dto';
+import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export class CreateProductDTO {
   @IsString()
@@ -63,4 +64,7 @@ export class CreateProductDTO {
   @ValidateNested()
   @Type(() => ProductPropsDTO)
   productProps: ProductPropsDTO[];
+
+  @Type(() => SeoDTO)
+  seo?: SeoDTO;
 }

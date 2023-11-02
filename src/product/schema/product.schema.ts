@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { ProductProps } from './productProps.schema';
 import { Brand } from '../brand/schema/brand.schema';
-import { Category } from '../../category/schema/category.schema';
+import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export type ProductDocument = Product & Document;
 
@@ -46,6 +46,9 @@ export class Product {
 
   @Prop({ type: () => [ProductProps] })
   productProps: ProductProps[];
+
+  @Prop({ type: () => SeoDTO })
+  seo: SeoDTO;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

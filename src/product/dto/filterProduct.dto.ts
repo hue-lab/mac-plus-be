@@ -8,6 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export class GetProductsSortDTO {
   @IsEnum(BasePropertyName)
@@ -68,4 +69,7 @@ export class GetProductsDTO {
 
   @IsOptional()
   customProperties?: GetProductsCustomPropertiesDTO;
+
+  @IsOptional()
+  seo: SeoDTO;
 }

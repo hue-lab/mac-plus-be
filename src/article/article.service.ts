@@ -26,16 +26,31 @@ export class ArticleService {
         $match: {
           $or: [
             { title: new RegExp(filterArticleDTO.search.toString(), 'i') },
-            { description: new RegExp(filterArticleDTO.search.toString(), 'i') },
+            {
+              description: new RegExp(filterArticleDTO.search.toString(), 'i'),
+            },
             { content: new RegExp(filterArticleDTO.search.toString(), 'i') },
             { tags: new RegExp(filterArticleDTO.search.toString(), 'i') },
-            { seoTags: new RegExp(filterArticleDTO.search.toString(), 'i') },
+            {
+              seo: {
+                seoTitle: new RegExp(filterArticleDTO.search.toString(), 'i'),
+                seoDescription: new RegExp(
+                  filterArticleDTO.search.toString(),
+                  'i',
+                ),
+                seoKeywords: new RegExp(
+                  filterArticleDTO.search.toString(),
+                  'i',
+                ),
+                seoAuthor: new RegExp(filterArticleDTO.search.toString(), 'i'),
+              },
+            },
           ],
         },
       });
     }
 
-    aggregate.push({$sort: {"createdAt": -1} });
+    aggregate.push({ $sort: { createdAt: -1 } });
 
     if (filterArticleDTO.preview) {
       aggregate.push({ $unset: ['content'] });
@@ -50,13 +65,48 @@ export class ArticleService {
       });
     }
 
-    if (filterArticleDTO.seoTags) {
-      const seoTags: string[] = filterArticleDTO.seoTags.split(',');
-      aggregate.push({
-        $match: {
-          seoTags: { $all: seoTags },
-        },
-      });
+    if (filterArticleDTO.seo) {
+      if (filterArticleDTO.seo.seoTitle) {
+        const seoTitle: string[] = filterArticleDTO.seo.seoTitle.split(' ');
+        aggregate.push({
+          $match: {
+            seo: {
+              seoTitle: { $all: seoTitle },
+            },
+          },
+        });
+      }
+      if (filterArticleDTO.seo.seoDescription) {
+        const seoDescription: string[] =
+          filterArticleDTO.seo.seoDescription.split(',');
+        aggregate.push({
+          $match: {
+            seo: {
+              seoDescription: { $all: seoDescription },
+            },
+          },
+        });
+      }
+      if (filterArticleDTO.seo.seoKeywords) {
+        const seoKeywords: string[] = filterArticleDTO.seo.seoKeywords;
+        aggregate.push({
+          $match: {
+            seo: {
+              seoKeywords: { $all: seoKeywords },
+            },
+          },
+        });
+      }
+      if (filterArticleDTO.seo.seoAuthor) {
+        const seoAuthor: string[] = filterArticleDTO.seo.seoAuthor.split(' ');
+        aggregate.push({
+          $match: {
+            seo: {
+              seoAuthor: { $all: seoAuthor },
+            },
+          },
+        });
+      }
     }
 
     paginate(aggregate, page, limit);
