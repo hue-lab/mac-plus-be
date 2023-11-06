@@ -14,7 +14,7 @@ import { paginate } from '../helpers/functions/paginate.func';
 import { BasePropertyName, ComparisonOperator } from './enums/product.enum';
 import { CategoryService } from '../category/category.service';
 import { nestedCategoriesList } from '../shared/functions/nested-categories-list.func';
-import { CategoryDocument } from '../category/schema/category.schema';
+import { Category, CategoryDocument } from '../category/schema/category.schema';
 
 @Injectable()
 export class ProductService {
@@ -42,6 +42,20 @@ export class ProductService {
         { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
       ])
       .exec();
+  }
+
+  async getItemBySlug(slug: string): Promise<Product | Category> {
+    const foundCategory = await this.categoryService.getCategoryBySlug(slug);
+    if (!foundCategory) {
+      const foundProduct = await this.getProduct(slug, true);
+      if (!foundProduct) {
+        throw new NotFoundException(
+          `Item with slug ${slug} not found`,
+        );
+      }
+      return foundProduct;
+    }
+    return foundCategory;
   }
 
   async getProductsByIds(productIds: mongoose.Types.ObjectId[]) {
@@ -73,11 +87,11 @@ export class ProductService {
     ]);
   }
 
-  async getProduct(id: string): Promise<Product> {
-    const productId = new mongoose.Types.ObjectId(id);
+  async getProduct(id: string, slug = false): Promise<Product> {
+    const productId = slug ? id : new mongoose.Types.ObjectId(id);
     return await this.productModel
       .aggregate([
-        { $match: { _id: productId } },
+        { $match: { [ slug ? 'seo.seoUrl' : '_id']: productId } },
         {
           $lookup: {
             from: 'brands',
