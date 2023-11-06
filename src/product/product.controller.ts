@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, UseGuards, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, UseGuards, } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -21,8 +21,8 @@ export class ProductController {
     return product;
   }
 
-  @Get('item/:slug')
-  async getItem(@Param('slug') slug: string): Promise<Product | Category> {
+  @Get('item')
+  async getItem(@Query('slug') slug: string): Promise<Product | Category> {
     return await this.productService.getItemBySlug(slug);
   }
 
