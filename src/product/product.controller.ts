@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, UseGuards, } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -18,6 +8,7 @@ import { CreateProductDTO } from './dto/createProduct.dto';
 import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { Product } from './schema/product.schema';
 import { GetProductsDTO } from './dto/filterProduct.dto';
+import { Category } from "../category/schema/category.schema";
 
 @Controller('store/')
 export class ProductController {
@@ -28,6 +19,11 @@ export class ProductController {
     const product = await this.productService.getProduct(id);
     if (!product) throw new NotFoundException('Product does not exist!');
     return product;
+  }
+
+  @Get('item/:slug')
+  async getItem(@Param('slug') slug: string): Promise<Product | Category> {
+    return await this.productService.getItemBySlug(slug);
   }
 
   @Get('autocomplete/:search')
