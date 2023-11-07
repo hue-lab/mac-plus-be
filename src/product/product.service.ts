@@ -88,24 +88,35 @@ export class ProductService {
   }
 
   async getProduct(id: string, slug = false): Promise<Product> {
-    const productId = slug ? id : new mongoose.Types.ObjectId(id);
+    let slugChain: string[], slugProduct: string, slugCategory: string;
+    const slugMatch:  mongoose.PipelineStage[] = [];
+    if (slug) {
+      slugChain = id.split('/');
+      slugProduct = slugChain.pop();
+      slugCategory = slugChain.join('/');
+      slugMatch.push({
+        $match: { 'category.handle': slugCategory }
+      });
+    }
+    const productId = slug ? slugProduct : new mongoose.Types.ObjectId(id);
     return await this.productModel
       .aggregate([
         { $match: { [ slug ? 'seo.seoUrl' : '_id']: productId } },
-        {
-          $lookup: {
-            from: 'brands',
-            localField: 'brand',
-            foreignField: '_id',
-            as: 'brand',
-          },
-        },
         {
           $lookup: {
             from: 'categories',
             localField: 'categoryId',
             foreignField: '_id',
             as: 'category',
+          },
+        },
+        ...slugMatch,
+        {
+          $lookup: {
+            from: 'brands',
+            localField: 'brand',
+            foreignField: '_id',
+            as: 'brand',
           },
         },
         { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
