@@ -202,6 +202,14 @@ export class ProductService {
           ],
         },
       },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'category',
+        },
+      },
     ];
 
     return this.productModel.aggregate([...aggregate]).exec();
@@ -358,10 +366,9 @@ export class ProductService {
             as: 'categoryId',
           },
         },
-        { $addFields: { categoryName: '$categoryId.name' } },
-        {
-          $unwind: { path: '$categoryName', preserveNullAndEmptyArrays: true },
-        },
+        { $addFields: { categoryName: '$categoryId.name', categoryHandle: '$categoryId.handle' } },
+        { $unwind: { path: '$categoryName', preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: '$categoryHandle', preserveNullAndEmptyArrays: true } },
         { $unset: 'categoryId' },
       );
     }
