@@ -119,7 +119,6 @@ export class ArticleService {
 
   async getArticle(id: string, slug = false): Promise<Article> {
     if (slug) {
-      console.log(id);
       return this.articleModel.findOne({ "seo.seoUrl": id }).exec();
     }
     return this.articleModel.findById(id);
