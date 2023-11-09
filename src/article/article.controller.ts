@@ -29,6 +29,15 @@ export class ArticleController {
     return this.articleService.getArticles(filterArticleDTO);
   }
 
+  @Get('item')
+  async getArticleItem(
+    @Query('slug') slug: string,
+  ): Promise<Article> {
+    const article = await this.articleService.getArticle(slug, true);
+    if (!article) throw new NotFoundException('Article does not exist');
+    return article;
+  }
+
   @Get(':id')
   async getArticle(
     @Param('id', IdValidationPipe) id: string,

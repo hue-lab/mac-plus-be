@@ -188,6 +188,7 @@ export class ProductService {
         $project: {
           name: 1,
           media: { $first: '$media' },
+          categoryId: "$categoryId",
         },
       },
       {
@@ -200,6 +201,7 @@ export class ProductService {
           ],
         },
       },
+      {$limit: 20},
       {
         $lookup: {
           from: 'categories',
@@ -208,6 +210,8 @@ export class ProductService {
           as: 'category',
         },
       },
+      { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+      { $unset: 'categoryId' },
     ];
 
     return this.productModel.aggregate([...aggregate]).exec();
