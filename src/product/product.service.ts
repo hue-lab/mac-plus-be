@@ -185,13 +185,6 @@ export class ProductService {
   async autocomplete(search: string): Promise<any> {
     const aggregate: PipelineStage[] = [
       {
-        $project: {
-          name: 1,
-          media: { $first: '$media' },
-          categoryId: "$categoryId",
-        },
-      },
-      {
         $match: {
           $or: [
             { name: new RegExp(search.toString(), 'i') },
@@ -202,6 +195,14 @@ export class ProductService {
         },
       },
       {$limit: 20},
+      {
+        $project: {
+          name: 1,
+          media: { $first: '$media' },
+          categoryId: "$categoryId",
+          seoUrl: "$seo.seoUrl",
+        },
+      },
       {
         $lookup: {
           from: 'categories',
