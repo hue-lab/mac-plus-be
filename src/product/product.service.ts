@@ -189,6 +189,7 @@ export class ProductService {
           name: 1,
           media: { $first: '$media' },
           categoryId: "$categoryId",
+          seoUrl: "$seo.seoUrl",
         },
       },
       {
