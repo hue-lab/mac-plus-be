@@ -9,5 +9,5 @@ export class SeoDTO {
   seoKeywords?: string[];
   seoAuthor?: string;
   seoUrl?: string;
-  seoImageAlt?: SeoImageAlt;
+  seoImageAlt?: SeoImageAlt[];
 }
