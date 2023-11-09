@@ -49,9 +49,7 @@ export class ProductService {
     if (!foundCategory) {
       const foundProduct = await this.getProduct(slug, true);
       if (!foundProduct) {
-        throw new NotFoundException(
-          `Item with slug ${slug} not found`,
-        );
+        throw new NotFoundException(`Item with slug ${slug} not found`);
       }
       return foundProduct;
     }
@@ -89,19 +87,19 @@ export class ProductService {
 
   async getProduct(id: string, slug = false): Promise<Product> {
     let slugChain: string[], slugProduct: string, slugCategory: string;
-    const slugMatch:  mongoose.PipelineStage[] = [];
+    const slugMatch: mongoose.PipelineStage[] = [];
     if (slug) {
       slugChain = id.split('/');
       slugProduct = slugChain.pop();
       slugCategory = slugChain.join('/');
       slugMatch.push({
-        $match: { 'category.handle': slugCategory }
+        $match: { 'category.handle': slugCategory },
       });
     }
     const productId = slug ? slugProduct : new mongoose.Types.ObjectId(id);
     return await this.productModel
       .aggregate([
-        { $match: { [ slug ? 'seo.seoUrl' : '_id']: productId } },
+        { $match: { [slug ? 'seo.seoUrl' : '_id']: productId } },
         {
           $lookup: {
             from: 'categories',
@@ -366,9 +364,21 @@ export class ProductService {
             as: 'categoryId',
           },
         },
-        { $addFields: { categoryName: '$categoryId.name', categoryHandle: '$categoryId.handle' } },
-        { $unwind: { path: '$categoryName', preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: '$categoryHandle', preserveNullAndEmptyArrays: true } },
+        {
+          $addFields: {
+            categoryName: '$categoryId.name',
+            categoryHandle: '$categoryId.handle',
+          },
+        },
+        {
+          $unwind: { path: '$categoryName', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: {
+            path: '$categoryHandle',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
         { $unset: 'categoryId' },
       );
     }
