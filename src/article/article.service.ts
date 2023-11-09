@@ -117,7 +117,10 @@ export class ArticleService {
       .then((items) => items[0]);
   }
 
-  async getArticle(id: string): Promise<Article> {
+  async getArticle(id: string, slug = false): Promise<Article> {
+    if (slug) {
+      return this.articleModel.findOne({ "$seo.seoUrl": slug }).exec();
+    }
     return this.articleModel.findById(id);
   }
 
