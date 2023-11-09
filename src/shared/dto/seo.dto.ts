@@ -1,4 +1,4 @@
-class SeoImageAlt {
+class SeoImage {
   imageName: string;
   imageAlt: string;
 }
@@ -9,5 +9,5 @@ export class SeoDTO {
   seoKeywords?: string[];
   seoAuthor?: string;
   seoUrl?: string;
-  seoImageAlt?: SeoImageAlt[];
+  seoImage?: SeoImage[];
 }
