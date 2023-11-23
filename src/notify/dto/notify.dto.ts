@@ -10,3 +10,9 @@ export class NotifyDTO {
   totalDiscount?: number;
   totalPrice?: number;
 }
+
+export class NotifyMessageDTO {
+  message?: string;
+  name?: string;
+  email?: string;
+}
