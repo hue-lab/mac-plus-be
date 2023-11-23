@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 import { ITelegram } from './interface/telegram.interface';
-import { NotifyDTO } from './dto/notify.dto';
+import { NotifyDTO, NotifyMessageDTO } from './dto/notify.dto';
 
 @Injectable()
 export class NotifyService {
@@ -34,6 +34,19 @@ export class NotifyService {
       `Оплата: ${notifyDTO.paymentMethod?.name ?? ''}\n` +
       `Скидка: ${notifyDTO.totalDiscount ?? ''}\n` +
       `К оплате: ${notifyDTO.totalPrice ?? ''}\n`;
+    await this.bot.telegram.sendMessage(chartId, message);
+  }
+
+  async sendCustomMessage(
+    notifyMessageDTO: NotifyMessageDTO,
+    chartId: string = this.options.chatId,
+  ) {
+    const message =
+      `Новый запрос\n` +
+      `Имя: ${notifyMessageDTO.name}\n` +
+      `Email: ${notifyMessageDTO.email}\n` +
+      `Комментарий:\n` +
+      `${notifyMessageDTO.message}`;
     await this.bot.telegram.sendMessage(chartId, message);
   }
 }
