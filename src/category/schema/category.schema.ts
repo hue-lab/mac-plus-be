@@ -13,7 +13,13 @@ export class Category {
   handle: string;
 
   @Prop({ type: String })
+  title?: string;
+
+  @Prop({ type: String })
   description?: string;
+
+  @Prop({ type: () => [String] })
+  keywords: string[];
 
   @Prop({ type: () => [String] })
   media: string[];
@@ -31,6 +37,9 @@ export class Category {
 
   @Prop({ type: Boolean })
   root?: boolean;
+
+  @Prop({ type: Number })
+  order?: number;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

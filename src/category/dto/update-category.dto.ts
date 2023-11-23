@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateCategoryDto {
   @IsString()
@@ -11,7 +17,15 @@ export class UpdateCategoryDto {
 
   @IsString()
   @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  keywords: string[];
 
   @IsArray()
   @IsString({ each: true })
@@ -28,4 +42,8 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   productTypeId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  order?: number;
 }
