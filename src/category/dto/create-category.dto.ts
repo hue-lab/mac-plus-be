@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -21,7 +22,15 @@ export class CreateCategoryDto {
 
   @IsString()
   @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  keywords: string[];
 
   @IsArray()
   @IsString({ each: true })
@@ -37,4 +46,8 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsBoolean()
   root?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  order?: number;
 }
