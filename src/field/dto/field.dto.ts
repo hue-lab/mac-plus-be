@@ -1,5 +1,5 @@
-import { FieldType } from "../enums/fieldType.enum";
-import { IsArray, IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { FieldType } from '../enums/fieldType.enum';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class FieldDTO {
   @IsString()
