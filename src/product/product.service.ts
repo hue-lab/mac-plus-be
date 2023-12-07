@@ -150,10 +150,21 @@ export class ProductService {
           $addFields: {
             productProps: {
               $map: {
-                input: {
-                  $zip: { inputs: ['$productProps', '$propsCollection'] },
-                },
-                in: { $mergeObjects: '$$this' },
+                input: "$productProps",
+                as: "productPropValue",
+                in: { $mergeObjects: [
+                  '$$productPropValue', {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: '$propsCollection',
+                          cond: { $eq: ['$$this._id', '$$productPropValue.productTypePropertyId'] }
+                        }
+                      },
+                      0
+                    ]
+                  }
+                ] },
               },
             },
           },
