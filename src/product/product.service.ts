@@ -194,14 +194,15 @@ export class ProductService {
   }
 
   async autocomplete(search: string): Promise<any> {
+    const transliteratedRegExp = new RegExp(transliterate(search.toString()), 'i');
     const aggregate: PipelineStage[] = [
       {
         $match: {
           $or: [
             { name: new RegExp(search.toString(), 'i') },
             { description: new RegExp(search.toString(), 'i') },
-            { name: new RegExp(transliterate(search.toString()), 'i') },
-            { description: new RegExp(transliterate(search.toString()), 'i') },
+            { name: transliteratedRegExp },
+            { description: transliteratedRegExp },
           ],
         },
       },

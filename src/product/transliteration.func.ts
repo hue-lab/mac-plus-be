@@ -1,9 +1,24 @@
 import { dictionary } from "../../config/dictionary";
 
 export function transliterate(text: string): string {
-  Object.entries(dictionary).forEach(([ru, en]: [string, string]) => {
-    text = text.replace(ru, en);
-  });
+  const dictEntries = Object.entries(dictionary);
+
+  if (text.length > 3) {
+    dictEntries.forEach(([ru, en]: [string, string]) => {
+      text = text.replace(ru, en);
+    });
+  }
+
+  for(const [ru, en] of dictEntries.reverse()) {
+    if (ru.length > text.length) {
+      const substrIndex = ru.toLowerCase().indexOf(text.toLowerCase());
+      if (substrIndex > -1) {
+        text = en.substring(substrIndex, text.length);
+        break;
+      }
+    }
+  }
+
   text = text
     .replace(/\u0401/g, 'YO')
     .replace(/\u0419/g, 'I')
