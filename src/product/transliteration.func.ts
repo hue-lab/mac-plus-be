@@ -1,4 +1,9 @@
+import { dictionary } from "../../config/dictionary";
+
 export function transliterate(text: string): string {
+  Object.entries(dictionary).forEach(([ru, en]: [string, string]) => {
+    text = text.replace(ru, en);
+  });
   text = text
     .replace(/\u0401/g, 'YO')
     .replace(/\u0419/g, 'I')
