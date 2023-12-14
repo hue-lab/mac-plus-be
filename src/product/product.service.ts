@@ -189,6 +189,20 @@ export class ProductService {
     });
   }
 
+  async updateProductPartial(
+    id: string,
+    updateProductDTO: Partial<CreateProductDTO>,
+  ): Promise<Product> {
+    const product = await this.productModel.findById(id);
+    if (!product) {
+      throw new NotFoundException(
+        `Product with id ${id} not found`,
+      );
+    }
+    Object.assign(product, updateProductDTO);
+    return product.save();
+  }
+
   async deleteProduct(id: string): Promise<any> {
     return this.productModel.findByIdAndRemove(id);
   }
