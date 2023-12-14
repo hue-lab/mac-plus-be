@@ -60,6 +60,21 @@ export class ProductController {
     return product;
   }
 
+  @Put('product/partial/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async updateProductPartial(
+    @Param('id') id: string,
+    @Body() updateProductDTO: Partial<CreateProductDTO>,
+  ) {
+    const product = await this.productService.updateProductPartial(
+      id,
+      updateProductDTO,
+    );
+    if (!product) throw new NotFoundException('Product does not exist!');
+    return product;
+  }
+
   @Delete('product/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
