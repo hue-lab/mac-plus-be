@@ -1,5 +1,11 @@
 import { dictionary } from "../../config/dictionary";
 
+export function normalizeSearch(text: string): string {
+  return text
+    .replace("(", "\\(")
+    .replace(")", "\\)")
+}
+
 export function transliterate(text: string): string {
   const dictEntries = Object.entries(dictionary);
 

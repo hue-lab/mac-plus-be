@@ -9,7 +9,7 @@ import {
 } from './dto/filterProduct.dto';
 import { CreateProductDTO } from './dto/createProduct.dto';
 import { objectIdProperties } from './const/object-id-properties.const';
-import { transliterate } from './transliteration.func';
+import { normalizeSearch, transliterate } from './transliteration.func';
 import { paginate } from '../helpers/functions/paginate.func';
 import { BasePropertyName, ComparisonOperator } from './enums/product.enum';
 import { CategoryService } from '../category/category.service';
@@ -208,6 +208,7 @@ export class ProductService {
   }
 
   async autocomplete(search: string): Promise<any> {
+    search = normalizeSearch(search);
     const transliteratedRegExp = new RegExp(transliterate(search.toString()), 'i');
     const aggregate: PipelineStage[] = [
       {
@@ -251,6 +252,7 @@ export class ProductService {
     const matchQueryArr = [];
 
     if (getProductsDTO.search) {
+      getProductsDTO.search = normalizeSearch(getProductsDTO.search);
       matchQueryArr.push({
         $or: [
           { name: new RegExp(getProductsDTO.search.toString(), 'i') },
