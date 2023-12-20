@@ -16,6 +16,9 @@ export class ProductTypeProperty {
   name: string;
 
   @Prop({ type: String })
+  code?: string;
+
+  @Prop({ type: String })
   description?: string;
 
   @Prop({ type: String })
