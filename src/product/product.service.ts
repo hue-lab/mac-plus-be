@@ -150,21 +150,29 @@ export class ProductService {
           $addFields: {
             productProps: {
               $map: {
-                input: "$productProps",
-                as: "productPropValue",
-                in: { $mergeObjects: [
-                  '$$productPropValue', {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: '$propsCollection',
-                          cond: { $eq: ['$$this._id', '$$productPropValue.productTypePropertyId'] }
-                        }
-                      },
-                      0
-                    ]
-                  }
-                ] },
+                input: '$productProps',
+                as: 'productPropValue',
+                in: {
+                  $mergeObjects: [
+                    '$$productPropValue',
+                    {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: '$propsCollection',
+                            cond: {
+                              $eq: [
+                                '$$this._id',
+                                '$$productPropValue.productTypePropertyId',
+                              ],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  ],
+                },
               },
             },
           },
@@ -195,9 +203,7 @@ export class ProductService {
   ): Promise<Product> {
     const product = await this.productModel.findById(id);
     if (!product) {
-      throw new NotFoundException(
-        `Product with id ${id} not found`,
-      );
+      throw new NotFoundException(`Product with id ${id} not found`);
     }
     Object.assign(product, updateProductDTO);
     return product.save();
@@ -209,7 +215,10 @@ export class ProductService {
 
   async autocomplete(search: string): Promise<any> {
     search = normalizeSearch(search);
-    const transliteratedRegExp = new RegExp(transliterate(search.toString()), 'i');
+    const transliteratedRegExp = new RegExp(
+      transliterate(search.toString()),
+      'i',
+    );
     const aggregate: PipelineStage[] = [
       {
         $match: {
@@ -221,13 +230,13 @@ export class ProductService {
           ],
         },
       },
-      {$limit: 20},
+      { $limit: 20 },
       {
         $project: {
           name: 1,
           media: { $first: '$media' },
-          categoryId: "$categoryId",
-          seoUrl: "$seo.seoUrl",
+          categoryId: '$categoryId',
+          seoUrl: '$seo.seoUrl',
         },
       },
       {
@@ -430,5 +439,26 @@ export class ProductService {
     }
     value = value.toString();
     return new ObjectId(value);
+  }
+
+  async updateProductsPrice(currencyValue: number) {
+    return this.productModel.updateMany(
+      {
+        priceUSD: { $exists: true },
+      },
+      [
+        {
+          $set: {
+            price: { $multiply: ['$priceUSD', currencyValue] },
+            totalPrice: {
+              $subtract: [
+                { $multiply: ['$priceUSD', currencyValue] },
+                { $multiply: ['$priceUSD', currencyValue, '$discount', 0.01] },
+              ],
+            },
+          },
+        },
+      ],
+    );
   }
 }
