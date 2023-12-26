@@ -449,11 +449,23 @@ export class ProductService {
       [
         {
           $set: {
-            price: { $multiply: ['$priceUSD', currencyValue] },
+            price: { $multiply: [{ $floor: { $multiply: ['$priceUSD', currencyValue, 0.1] } }, 10] },
             totalPrice: {
-              $subtract: [
-                { $multiply: ['$priceUSD', currencyValue] },
-                { $multiply: ['$priceUSD', currencyValue, '$discount', 0.01] },
+              $multiply: [
+                {
+                  $floor: {
+                    $multiply: [
+                      {
+                        $subtract: [
+                          { $multiply: ['$priceUSD', currencyValue] },
+                          { $multiply: ['$priceUSD', currencyValue, '$discount', 0.01] },
+                        ],
+                      },
+                      0.1
+                    ]
+                  },
+                },
+                10
               ],
             },
           },

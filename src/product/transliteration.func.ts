@@ -4,6 +4,8 @@ export function normalizeSearch(text: string): string {
   return text
     .replace("(", "\\(")
     .replace(")", "\\)")
+    .replace("[", "\\[")
+    .replace("]", "\\]")
 }
 
 export function transliterate(text: string): string {
