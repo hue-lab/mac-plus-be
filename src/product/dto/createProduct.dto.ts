@@ -26,6 +26,10 @@ export class CreateProductDTO {
 
   @IsNumber()
   @IsNotEmpty()
+  priceUSD: number;
+
+  @IsNumber()
+  @IsNotEmpty()
   totalPrice: number;
 
   @IsNumber()
