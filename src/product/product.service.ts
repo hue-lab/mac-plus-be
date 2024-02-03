@@ -421,7 +421,6 @@ export class ProductService {
             preserveNullAndEmptyArrays: true,
           },
         },
-        { $unset: 'categoryId' },
       );
     }
 
