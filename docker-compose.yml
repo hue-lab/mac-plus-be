@@ -24,6 +24,8 @@ services:
       - MONGODB_NAME=${MONGODB_NAME}
       - MONGODB_PORT=${MONGODB_PORT}
       - MONGODB_URL=mac-plus-db
+      - TG_TOKEN=${TG_TOKEN}
+      - TG_CHAT_ID=${TG_CHAT_ID}
     volumes:
       - ./storage:/opt/app/storage
     networks:

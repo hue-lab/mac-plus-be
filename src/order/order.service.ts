@@ -91,7 +91,11 @@ export class OrderService {
       totalDiscount: calculation.totalDiscount,
       totalPrice: calculation.totalPrice,
     };
-    await this.notifyService.sendMessage(notify);
+    try {
+      await this.notifyService.sendMessage(notify);
+    } catch (e) {
+      console.log('Error: Cannot send telegram message!');
+    }
     return newOrder.save();
   }
 
