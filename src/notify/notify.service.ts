@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 import { ITelegram } from './interface/telegram.interface';
 import { NotifyDTO, NotifyMessageDTO } from './dto/notify.dto';
+import * as process from "process";
 
 @Injectable()
 export class NotifyService {
@@ -10,8 +11,8 @@ export class NotifyService {
 
   constructor() {
     this.options = {
-      token: '6464298444:AAFmEl1K7aOgqeM2412nhqfh0anonrkQGbc',
-      chatId: '-4037764153,',
+      token: process.env.TG_TOKEN,
+      chatId: process.env.TG_CHAT_ID,
     };
     this.bot = new Telegraf(this.options.token);
   }
