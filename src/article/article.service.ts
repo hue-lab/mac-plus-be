@@ -65,18 +65,18 @@ export class ArticleService {
       });
     }
 
-    if (filterArticleDTO.isSlide !== undefined) {
+    if (filterArticleDTO.isSlide) {
       aggregate.push({
         $match: {
-          isSlide: { $eq: filterArticleDTO.isSlide },
+          isSlide: filterArticleDTO.isSlide === 'true' ? { $eq: true } : { $ne: true },
         },
       })
     }
 
-    if (filterArticleDTO.hidden !== undefined) {
+    if (filterArticleDTO.hidden) {
       aggregate.push({
         $match: {
-          hidden: { $eq: filterArticleDTO.hidden },
+          hidden: filterArticleDTO.hidden === 'true' ? { $eq: true } : { $ne: true },
         },
       })
     }
