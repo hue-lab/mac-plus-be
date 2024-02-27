@@ -65,6 +65,22 @@ export class ArticleService {
       });
     }
 
+    if (filterArticleDTO.isSlide !== undefined) {
+      aggregate.push({
+        $match: {
+          isSlide: { $eq: filterArticleDTO.isSlide },
+        },
+      })
+    }
+
+    if (filterArticleDTO.hidden !== undefined) {
+      aggregate.push({
+        $match: {
+          hidden: { $eq: filterArticleDTO.hidden },
+        },
+      })
+    }
+
     if (filterArticleDTO.seo) {
       if (filterArticleDTO.seo.seoTitle) {
         const seoTitle: string[] = filterArticleDTO.seo.seoTitle.split(' ');

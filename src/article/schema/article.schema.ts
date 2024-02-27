@@ -21,6 +21,21 @@ export class Article {
   @Prop({ type: [String] })
   tags: string[];
 
+  @Prop({ type: Boolean })
+  isSlide: boolean;
+
+  @Prop({ type: Boolean })
+  hidden: boolean;
+
+  @Prop({ type: String })
+  slideTitle: string;
+
+  @Prop({ type: String })
+  slideDescription: string;
+
+  @Prop({ type: String })
+  slideLink: string;
+
   @Prop()
   seo?: SeoDTO;
 }
