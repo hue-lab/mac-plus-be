@@ -3,8 +3,8 @@ import { SeoDTO } from '../../shared/dto/seo.dto';
 export class FilterArticleDTO {
   search: string;
   tags: string;
-  isSlide?: boolean;
-  hidden?: boolean;
+  isSlide?: string;
+  hidden?: string;
   sort: string;
   asc: number;
   preview: boolean;
