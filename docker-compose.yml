@@ -1,13 +1,5 @@
 version: '3'
 services:
-  dashboard:
-    image: ghcr.io/hue-lab/mac-plus-dashboard/image:production
-    container_name: mac-plus-dashboard
-    restart: always
-    environment:
-      NODE_ENV: production
-    ports:
-      - "8000:8000"
   backend:
     image: ghcr.io/hue-lab/mac-plus-be/image:production
     container_name: mac-plus-be
