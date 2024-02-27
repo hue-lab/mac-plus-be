@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { SeoDTO } from '../../shared/dto/seo.dto';
 
 export class ArticleDTO {
@@ -22,6 +22,21 @@ export class ArticleDTO {
   @IsString({ each: true })
   @IsNotEmpty()
   tags: string[];
+
+  @IsBoolean()
+  isSlide: boolean;
+
+  @IsBoolean()
+  hidden: boolean;
+
+  @IsString()
+  slideTitle: string;
+
+  @IsString()
+  slideDescription: string;
+
+  @IsString()
+  slideLink: string;
 
   @IsOptional()
   seo: SeoDTO;
