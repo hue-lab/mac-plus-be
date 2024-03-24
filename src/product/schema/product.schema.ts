@@ -32,6 +32,9 @@ export class Product {
   @Prop({ type: String })
   description: string;
 
+  @Prop({ type: String })
+  content?: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Category' })
   categoryId: string;
 

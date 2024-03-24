@@ -28,6 +28,10 @@ export class CreateCategoryDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  content?: string;
+
   @IsArray()
   @IsString({ each: true })
   keywords: string[];
