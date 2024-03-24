@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -43,6 +44,10 @@ export class CreateProductDTO {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
 
   @IsString()
   @IsNotEmpty()

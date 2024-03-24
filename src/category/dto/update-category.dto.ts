@@ -23,6 +23,10 @@ export class UpdateCategoryDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  content?: string;
+
   @IsArray()
   @IsString({ each: true })
   keywords: string[];

@@ -18,6 +18,9 @@ export class Category {
   @Prop({ type: String })
   description?: string;
 
+  @Prop({ type: String })
+  content?: string;
+
   @Prop({ type: () => [String] })
   keywords: string[];
 
