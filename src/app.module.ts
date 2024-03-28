@@ -14,6 +14,7 @@ import { getMongoDB } from '../config/getMongoDB';
 import { StoreConfigModule } from './storeConfig/storeConfig.module';
 import { MenuModule } from './menu/menu.module';
 import { FieldModule } from "./field/field.module";
+import { SeoModule } from "./seo/seo.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FieldModule } from "./field/field.module";
     StoreConfigModule,
     FieldModule,
     MenuModule,
+    SeoModule,
   ],
   controllers: [],
   providers: [],
