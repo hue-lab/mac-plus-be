@@ -6,24 +6,24 @@ export class SeoDto {
   id?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   title: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description: string;
 
   @IsArray()
   @IsString({ each: true })
-  @IsNotEmpty()
+  @IsOptional()
   keywords: string[];
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   tag: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   content: string;
 
   @IsString()
