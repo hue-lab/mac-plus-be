@@ -18,7 +18,7 @@ export class SeoController {
     return this.seoService.getAllSeo();
   }
 
-  @Get(':url')
+  @Get('item')
   async getSeoByUrl(@Query() seoByUrlDto: SeoByUrlDto): Promise<SeoDocument | unknown> {
     return this.seoService.getSeoByUrl(seoByUrlDto.url);
   }
