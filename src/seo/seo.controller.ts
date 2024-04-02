@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { SeoService } from './seo.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
-import { SeoDto } from './dto/seo.dto';
+import { SeoByUrlDto, SeoDto } from './dto/seo.dto';
 import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { SeoResponseDTO } from './dto/seoResponse.dto';
 import { SeoDocument } from './schema/seo.schema';
@@ -19,8 +19,8 @@ export class SeoController {
   }
 
   @Get(':url')
-  async getSeoByUrl(@Param('url') url: string): Promise<SeoDocument | unknown> {
-    return this.seoService.getSeoByUrl(url);
+  async getSeoByUrl(@Query() seoByUrlDto: SeoByUrlDto): Promise<SeoDocument | unknown> {
+    return this.seoService.getSeoByUrl(seoByUrlDto.url);
   }
 
   @Post()

@@ -1,5 +1,9 @@
 import { IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
+export class SeoByUrlDto {
+  url?: string;
+}
+
 export class SeoDto {
   @IsMongoId()
   @IsOptional()
