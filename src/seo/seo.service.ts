@@ -13,7 +13,7 @@ export class SeoService {
   }
 
   async getSeoByUrl(url: string): Promise<SeoDocument | unknown> {
-    return this.seoModel.findOne({ url: {$regex: new RegExp(url?.toString(), 'i')} }).exec();
+    return this.seoModel.findOne({ url }).exec();
   }
 
   async createSeo(seoDto: SeoDto): Promise<SeoDocument> {
