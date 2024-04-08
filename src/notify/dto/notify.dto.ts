@@ -14,5 +14,5 @@ export class NotifyDTO {
 export class NotifyMessageDTO {
   message?: string;
   name?: string;
-  email?: string;
+  phone?: string;
 }
