@@ -45,7 +45,7 @@ export class NotifyService {
     const message =
       `Новый запрос\n` +
       `Имя: ${notifyMessageDTO.name}\n` +
-      `Телефон: ${notifyMessageDTO.email}\n` +
+      `Телефон: ${notifyMessageDTO.phone}\n` +
       `Комментарий:\n` +
       `${notifyMessageDTO.message}`;
     await this.bot.telegram.sendMessage(chartId, message);
