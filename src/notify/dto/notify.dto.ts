@@ -9,6 +9,7 @@ export class NotifyDTO {
   paymentMethod?: PaymentMethod;
   totalDiscount?: number;
   totalPrice?: number;
+  products?: string;
 }
 
 export class NotifyMessageDTO {
