@@ -32,9 +32,9 @@ export class NotifyService {
       `Стоимость доставки: ${
         notifyDTO.delivery?.deliveryMethod.deliveryPrice ?? ''
       }\n` +
-      notifyDTO.delivery?.deliveryData?.map(item => (
+      (notifyDTO.delivery?.deliveryData?.map(item => (
         `${item?.name}: ${item?.value} \n`
-      ))?.join() ?? '' +
+      ))?.join() ?? '') +
       `Товары: ${notifyDTO.products ?? ''}\n` +
       `Оплата: ${notifyDTO.paymentMethod?.name ?? ''}\n` +
       `Скидка: ${notifyDTO.totalDiscount ?? ''}\n` +
