@@ -13,8 +13,10 @@ import { ConfigModule } from '@nestjs/config';
 import { getMongoDB } from '../config/getMongoDB';
 import { StoreConfigModule } from './storeConfig/storeConfig.module';
 import { MenuModule } from './menu/menu.module';
-import { FieldModule } from "./field/field.module";
-import { SeoModule } from "./seo/seo.module";
+import { FieldModule } from './field/field.module';
+import { SeoModule } from './seo/seo.module';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -22,6 +24,11 @@ import { SeoModule } from "./seo/seo.module";
       envFilePath: ['./.env', './.env.local'],
     }),
     MongooseModule.forRoot(getMongoDB().URI, { dbName: getMongoDB().DB }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 5,
+      max: 10,
+    }),
     UserModule,
     ProductModule,
     AuthModule,
@@ -37,8 +44,12 @@ import { SeoModule } from "./seo/seo.module";
     SeoModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
   exports: [],
 })
-export class AppModule {
-}
+export class AppModule {}
