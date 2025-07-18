@@ -138,6 +138,7 @@ export class CategoryService {
     children,
     productTypeId,
     icon,
+    isHidden,
   }: any): UpdateCategoryDto {
     return {
       name,
@@ -147,6 +148,7 @@ export class CategoryService {
       keywords,
       media,
       icon,
+      isHidden,
       productTypeId,
       children: children.map((item) => item._id.toString()),
     };

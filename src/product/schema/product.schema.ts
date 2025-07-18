@@ -50,6 +50,9 @@ export class Product {
   @Prop({ type: Boolean })
   isStock: boolean;
 
+  @Prop([{ type: SchemaTypes.ObjectId, ref: 'Product' }])
+  associatedProducts?: string[];
+
   @Prop({ type: () => [ProductProps] })
   productProps: ProductProps[];
 

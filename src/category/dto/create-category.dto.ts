@@ -44,6 +44,10 @@ export class CreateCategoryDto {
   icon: string;
 
   @IsOptional()
+  @IsBoolean()
+  isHidden?: boolean;
+
+  @IsOptional()
   @IsString()
   productTypeId?: string;
 
