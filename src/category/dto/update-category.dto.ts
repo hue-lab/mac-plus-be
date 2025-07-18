@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsBoolean,
 } from 'class-validator';
 
 export class UpdateCategoryDto {
@@ -37,6 +38,10 @@ export class UpdateCategoryDto {
 
   @IsString()
   icon: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isHidden?: boolean;
 
   @IsOptional()
   @IsArray()

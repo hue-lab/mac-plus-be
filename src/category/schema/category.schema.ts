@@ -30,6 +30,9 @@ export class Category {
   @Prop({ type: String })
   icon: string;
 
+  @Prop({ type: Boolean })
+  isHidden?: boolean;
+
   @Prop([
     { type: SchemaTypes.ObjectId, ref: Category.name, autopopulate: true },
   ])

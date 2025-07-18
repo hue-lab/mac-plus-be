@@ -70,6 +70,11 @@ export class CreateProductDTO {
   isStock: boolean;
 
   @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  associatedProducts?: string[];
+
+  @IsArray()
   @ValidateNested()
   @Type(() => ProductPropsDTO)
   productProps: ProductPropsDTO[];

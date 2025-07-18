@@ -120,6 +120,14 @@ export class ProductService {
         { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
         { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
         {
+          $lookup: {
+            from: 'products',
+            localField: 'associatedProducts',
+            foreignField: '_id',
+            as: 'associatedProducts',
+          },
+        },
+        {
           $addFields: {
             productProps: {
               $map: {
