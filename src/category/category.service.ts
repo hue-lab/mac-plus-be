@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  OnModuleInit,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from './schema/category.schema';
@@ -12,14 +7,10 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { customAlphabet } from 'nanoid';
 
 @Injectable()
-export class CategoryService implements OnModuleInit {
+export class CategoryService {
   constructor(
     @InjectModel('Category') private readonly categoryModel: Model<Category>,
   ) {}
-
-  async onModuleInit() {
-    await this.addNumberIdForExisting();
-  }
 
   async getCategories(): Promise<Category[]> {
     return await this.categoryModel.find().exec();
@@ -175,15 +166,5 @@ export class CategoryService implements OnModuleInit {
       numberId = nanoid();
     }
     return numberId;
-  }
-
-  private async addNumberIdForExisting(): Promise<void> {
-    const categories = await this.categoryModel.find({
-      $or: [{ numberId: { $exists: false } }, { numberId: null }],
-    });
-    for (const category of categories) {
-      category.numberId = await this.generateNumberId();
-      await category.save();
-    }
   }
 }
