@@ -9,6 +9,9 @@ export class Category {
   @Prop({ type: String, required: true })
   name: string;
 
+  @Prop({ type: String, unique: true })
+  numberId: string;
+
   @Prop({ type: String })
   handle: string;
 

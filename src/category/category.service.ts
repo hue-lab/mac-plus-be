@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Category } from './schema/category.schema';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { customAlphabet } from 'nanoid';
 
 @Injectable()
 export class CategoryService {
@@ -40,7 +41,11 @@ export class CategoryService {
     if (!createCategoryDto.root && !rootCategory) {
       throw new HttpException('Root category not found', HttpStatus.NOT_FOUND);
     }
-    const newCategory = await this.categoryModel.create(createCategoryDto);
+    const numberId = await this.generateNumberId();
+    const newCategory = await this.categoryModel.create({
+      ...createCategoryDto,
+      numberId,
+    });
     return newCategory.save().then(async (res) => {
       if (!createCategoryDto.root) {
         const parentId = createCategoryDto.parent
@@ -152,5 +157,14 @@ export class CategoryService {
       productTypeId,
       children: children.map((item) => item._id.toString()),
     };
+  }
+
+  private async generateNumberId(): Promise<string> {
+    const nanoid = customAlphabet('0123456789', 18);
+    let numberId = nanoid();
+    while (await this.categoryModel.exists({ numberId })) {
+      numberId = nanoid();
+    }
+    return numberId;
   }
 }
