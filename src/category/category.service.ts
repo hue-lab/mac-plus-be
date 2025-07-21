@@ -160,10 +160,11 @@ export class CategoryService {
   }
 
   private async generateNumberId(): Promise<string> {
-    const nanoid = customAlphabet('0123456789', 18);
+    const nanoid = customAlphabet('123456789', 1);
+    const nanoidRest = customAlphabet('0123456789', 17);
     let numberId = nanoid();
     while (await this.categoryModel.exists({ numberId })) {
-      numberId = nanoid();
+      numberId = nanoid() + nanoidRest();
     }
     return numberId;
   }
