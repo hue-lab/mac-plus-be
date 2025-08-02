@@ -122,28 +122,8 @@ export class ProductService {
         {
           $lookup: {
             from: 'products',
-            let: { assocIds: '$associatedProducts' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $in: ['$_id', '$$assocIds'] },
-                },
-              },
-              {
-                $lookup: {
-                  from: 'categories',
-                  localField: 'categoryId',
-                  foreignField: '_id',
-                  as: 'category',
-                },
-              },
-              {
-                $unwind: {
-                  path: '$category',
-                  preserveNullAndEmptyArrays: true,
-                },
-              },
-            ],
+            localField: 'associatedProducts',
+            foreignField: '_id',
             as: 'associatedProducts',
           },
         },
@@ -476,12 +456,7 @@ export class ProductService {
       [
         {
           $set: {
-            price: {
-              $multiply: [
-                { $floor: { $multiply: ['$priceUSD', currencyValue, 0.1] } },
-                10,
-              ],
-            },
+            price: { $multiply: [{ $floor: { $multiply: ['$priceUSD', currencyValue, 0.1] } }, 10] },
             totalPrice: {
               $multiply: [
                 {
@@ -490,21 +465,14 @@ export class ProductService {
                       {
                         $subtract: [
                           { $multiply: ['$priceUSD', currencyValue] },
-                          {
-                            $multiply: [
-                              '$priceUSD',
-                              currencyValue,
-                              '$discount',
-                              0.01,
-                            ],
-                          },
+                          { $multiply: ['$priceUSD', currencyValue, '$discount', 0.01] },
                         ],
                       },
-                      0.1,
-                    ],
+                      0.1
+                    ]
                   },
                 },
-                10,
+                10
               ],
             },
           },
