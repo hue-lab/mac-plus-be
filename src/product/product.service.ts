@@ -120,10 +120,35 @@ export class ProductService {
         { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
         { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
         {
+          $addFields: {
+            associatedProducts: { $ifNull: ['$associatedProducts', []] },
+          },
+        },
+        {
           $lookup: {
             from: 'products',
-            localField: 'associatedProducts',
-            foreignField: '_id',
+            let: { assocIds: '$associatedProducts' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ['$_id', '$$assocIds'] },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'categoryId',
+                  foreignField: '_id',
+                  as: 'category',
+                },
+              },
+              {
+                $unwind: {
+                  path: '$category',
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
             as: 'associatedProducts',
           },
         },
