@@ -18,6 +18,9 @@ export class DeliveryMethod {
   @Prop({ type: Number })
   deliveryPrice: number;
 
+  @Prop({ type: Number })
+  deliveryThreshold: number;
+
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'PaymentMethod' })
   paymentMethods: mongoose.Schema.Types.ObjectId[];
 }

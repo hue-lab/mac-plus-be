@@ -22,6 +22,7 @@ export class CalculationService {
     let orderPrice = 0;
     let fixPrice = 0;
     let deliveryPrice = 0;
+    let deliveryThreshold = 0;
 
     const productIds: mongoose.Types.ObjectId[] = [];
     totalDiscountDTO.products.forEach((query) => {
@@ -35,7 +36,8 @@ export class CalculationService {
         await this.deliveryMethodService.getDeliveryMethodById(
           totalDiscountDTO.deliveryMethod,
         );
-      deliveryPrice = deliveryMethod[0].deliveryPrice;
+      deliveryPrice = deliveryMethod[0]?.deliveryPrice || 0;
+      deliveryThreshold = deliveryMethod[0]?.deliveryThreshold || 0;
     }
 
     const discountConfig = await this.discountConfigService.getDiscountConfig();
@@ -49,6 +51,10 @@ export class CalculationService {
       totalItemsCount += product.count;
       orderPrice += product.totalPrice * product.count;
     });
+
+    if (deliveryThreshold > 0 && orderPrice >= deliveryThreshold) {
+      deliveryPrice = 0;
+    }
 
     if (
       discountConfig.fixPriceCategories &&

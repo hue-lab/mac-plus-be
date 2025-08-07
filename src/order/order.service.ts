@@ -11,7 +11,7 @@ import { IProduct } from '../shared/interfaces/total.interface';
 import { UpdateOrderDTO } from './dto/update-order.dto';
 import { GetOrdersDTO, OrderSortProperties } from './dto/get-orders.dto';
 import { paginate } from '../helpers/functions/paginate.func';
-import { TotalCartItem } from "../shared/interfaces/totalCartItem.interface";
+import { TotalCartItem } from '../shared/interfaces/totalCartItem.interface';
 
 @Injectable()
 export class OrderService {
@@ -92,7 +92,9 @@ export class OrderService {
         paymentMethod: createOrderDTO.paymentMethod,
         totalDiscount: calculation.totalDiscount,
         totalPrice: calculation.totalPrice,
-        products: (newOrder.cartItems as TotalCartItem[]).map(item => item?.product?.name)?.join(', '),
+        products: (newOrder.cartItems as TotalCartItem[])
+          .map((item) => item?.product?.name)
+          ?.join(', '),
       };
       await this.notifyService.sendMessage(notify);
     } catch (e) {
