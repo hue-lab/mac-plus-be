@@ -69,6 +69,13 @@ export class OrderService {
       },
       true,
     );
+    const extendedDelivery = {
+      ...createOrderDTO.delivery,
+      deliveryMethod: {
+        ...createOrderDTO.delivery.deliveryMethod,
+        deliveryPrice: calculation.deliveryPrice,
+      },
+    };
     Object.assign(createOrderDTO, {
       orderCode,
       cartItems: createOrderDTO.cartItems.map((cartItem) => ({
@@ -78,6 +85,7 @@ export class OrderService {
         ),
         count: cartItem.count,
       })),
+      delivery: extendedDelivery,
       subTotalPrice: calculation.orderPrice,
       totalPrice: calculation.totalPrice,
       totalDiscount: calculation.totalDiscount,
@@ -88,7 +96,7 @@ export class OrderService {
       const notify: NotifyDTO = {
         customer: createOrderDTO.customer,
         orderCode,
-        delivery: createOrderDTO.delivery,
+        delivery: extendedDelivery,
         paymentMethod: createOrderDTO.paymentMethod,
         totalDiscount: calculation.totalDiscount,
         totalPrice: calculation.totalPrice,
