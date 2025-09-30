@@ -278,16 +278,31 @@ export class ProductService {
           localField: 'categoryId',
           foreignField: '_id',
           as: 'category',
+          pipeline: [{ $project: { _id: 1, handle: 1, name: 1, isHidden: 1 } }],
         },
       },
       { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
-      { $unset: 'categoryId' },
     ];
+
+    aggregate.push({
+      $match: {
+        $or: [
+          { 'category.isHidden': { $ne: true } },
+          { category: { $eq: null } },
+        ],
+      },
+    });
+
+    aggregate.push(
+      { $unset: ['categoryId'] },
+    );
 
     return this.productModel.aggregate([...aggregate]).exec();
   }
 
   async getProducts(getProductsDTO: GetProductsDTO): Promise<any> {
+    const hideDisabledCategories =
+      getProductsDTO.hideDisabledCategories || false;
     const page: number = parseInt(getProductsDTO?.pagination?.page as any) || 1;
     const limit: number =
       parseInt(String(getProductsDTO?.pagination?.limit)) || 10;
@@ -407,6 +422,32 @@ export class ProductService {
         $match:
           matchQueryArr.length > 1 ? { $and: matchQueryArr } : matchQueryArr[0],
       });
+    }
+
+    if (hideDisabledCategories) {
+      aggregate.push(
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'categoryId',
+            foreignField: '_id',
+            as: 'categoryDoc',
+            pipeline: [
+              { $project: { _id: 1, isHidden: 1 } },
+            ],
+          },
+        },
+        { $unwind: { path: '$categoryDoc', preserveNullAndEmptyArrays: true } },
+        {
+          $match: {
+            $or: [
+              { 'categoryDoc.isHidden': { $ne: true } },
+              { categoryDoc: { $eq: null } },
+            ],
+          },
+        },
+        { $unset: 'categoryDoc' },
+      );
     }
 
     aggregate.push(

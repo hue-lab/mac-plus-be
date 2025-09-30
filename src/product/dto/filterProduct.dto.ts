@@ -72,4 +72,7 @@ export class GetProductsDTO {
 
   @IsOptional()
   seo: SeoDTO;
+
+  @IsOptional()
+  hideDisabledCategories?: boolean;
 }
