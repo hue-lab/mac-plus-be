@@ -38,7 +38,9 @@ export class NotifyService {
       `Товары: ${notifyDTO.products ?? ''}\n` +
       `Оплата: ${notifyDTO.paymentMethod?.name ?? ''}\n` +
       `Скидка: ${notifyDTO.totalDiscount ?? ''}\n` +
-      `К оплате: ${notifyDTO.totalPrice ?? ''}\n`;
+      `К оплате: ${notifyDTO.totalPrice ?? ''}\n` +
+      `Комментарий:\n` +
+      `${notifyDTO.delivery?.comment ?? '-'}`;
     await this.bot.telegram.sendMessage(chartId, message);
   }
 
