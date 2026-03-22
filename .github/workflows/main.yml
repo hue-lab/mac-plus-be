@@ -1,19 +1,21 @@
-name: mac-plus-be CI/CD
+name: mac-plus-be CI
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          registry: docker.pkg.github.com
-          name: hue-lab/mac-plus-be/image
-          username: ${{ github.actor }}
-          password: ${{ secrets.CI_CD_TOKEN }}
-          tags: 'production'
+          node-version: 18
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application
+        run: npm run build

@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import { path } from 'app-root-path';
 
 async function bootstrap() {
-  const PORT = process.env.PORT || 5001;
+  const PORT = process.env.PORT || 5000;
   // const httpsOptions = {
   //   key: fs.readFileSync(`${path}/certs/properfumer.key`, 'utf-8'),
   //   cert: fs.readFileSync(`${path}/certs/properfumer.crt`, 'utf-8'),
