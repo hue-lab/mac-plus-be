@@ -43,4 +43,8 @@ export class NotifyMessageDTO {
   @IsOptional()
   @IsString()
   captchaToken?: string;
+
+  @IsOptional()
+  @IsString()
+  formToken?: string;
 }

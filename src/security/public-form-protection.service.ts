@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { createHmac, randomBytes } from 'crypto';
 import * as https from 'https';
 
 import { PublicFormAction } from './public-form.decorator';
@@ -25,34 +26,40 @@ export interface PublicFormCheck {
 }
 
 export interface PublicFormBlock {
-  reason: 'origin' | 'honeypot' | 'captcha' | 'rate-limit';
+  reason: 'origin' | 'honeypot' | 'captcha' | 'rate-limit' | 'token';
   key?: string;
 }
 
 @Injectable()
 export class PublicFormProtectionService {
   private readonly buckets = new Map<string, number[]>();
+  private readonly usedFormTokens = new Map<string, number>();
+  private readonly fallbackTokenSecret = randomBytes(32).toString('hex');
 
   private readonly rules: Record<PublicFormAction, PublicFormRules> = {
     'quick-message': {
-      global: { limit: 40, windowMs: 60 * 1000 },
-      ip: { limit: 3, windowMs: 60 * 1000 },
-      ipLong: { limit: 12, windowMs: 60 * 60 * 1000 },
-      phone: { limit: 2, windowMs: 60 * 60 * 1000 },
-      duplicate: { limit: 1, windowMs: 24 * 60 * 60 * 1000 },
+      global: { limit: 120, windowMs: 60 * 1000 },
+      ip: { limit: 8, windowMs: 60 * 1000 },
+      ipLong: { limit: 40, windowMs: 60 * 60 * 1000 },
+      phone: { limit: 5, windowMs: 60 * 60 * 1000 },
+      duplicate: { limit: 2, windowMs: 10 * 60 * 1000 },
     },
     order: {
-      global: { limit: 30, windowMs: 60 * 1000 },
-      ip: { limit: 4, windowMs: 5 * 60 * 1000 },
-      ipLong: { limit: 10, windowMs: 60 * 60 * 1000 },
-      phone: { limit: 3, windowMs: 60 * 60 * 1000 },
-      duplicate: { limit: 1, windowMs: 30 * 60 * 1000 },
+      global: { limit: 80, windowMs: 60 * 1000 },
+      ip: { limit: 8, windowMs: 5 * 60 * 1000 },
+      ipLong: { limit: 30, windowMs: 60 * 60 * 1000 },
+      phone: { limit: 5, windowMs: 60 * 60 * 1000 },
+      duplicate: { limit: 2, windowMs: 10 * 60 * 1000 },
     },
   };
 
   async check(input: PublicFormCheck): Promise<PublicFormBlock | null> {
     if (!this.isAllowedOrigin(input.origin, input.referer)) {
       return { reason: 'origin' };
+    }
+
+    if (!this.isFormTokenValid(input.body?.formToken, input.action)) {
+      return { reason: 'token' };
     }
 
     if (this.hasHoneypotValue(input.body)) {
@@ -90,6 +97,22 @@ export class PublicFormProtectionService {
     return null;
   }
 
+  createFormToken(action: PublicFormAction): string {
+    const payload = {
+      action,
+      iat: Date.now(),
+      nonce: randomBytes(16).toString('hex'),
+    };
+    const encodedPayload = this.base64UrlEncode(JSON.stringify(payload));
+    const signature = this.sign(encodedPayload);
+
+    return `${encodedPayload}.${signature}`;
+  }
+
+  canIssueToken(origin?: string, referer?: string): boolean {
+    return this.isAllowedOrigin(origin, referer);
+  }
+
   private addAttempt(key: string, rule: RateRule): boolean {
     const now = Date.now();
     const timestamps = (this.buckets.get(key) ?? []).filter(
@@ -104,6 +127,81 @@ export class PublicFormProtectionService {
     timestamps.push(now);
     this.buckets.set(key, timestamps);
     return true;
+  }
+
+  private isFormTokenValid(token: string, action: PublicFormAction): boolean {
+    if (process.env.PUBLIC_FORM_DISABLE_TOKEN_CHECK === 'true') {
+      return true;
+    }
+
+    if (process.env.PUBLIC_FORM_REQUIRE_TOKEN !== 'true') {
+      return true;
+    }
+
+    if (!token || typeof token !== 'string') {
+      return false;
+    }
+
+    const [encodedPayload, signature] = token.split('.');
+    if (!encodedPayload || !signature || signature !== this.sign(encodedPayload)) {
+      return false;
+    }
+
+    try {
+      const payload = JSON.parse(this.base64UrlDecode(encodedPayload));
+      const now = Date.now();
+      const tokenTtlMs = 10 * 60 * 1000;
+
+      if (
+        payload.action !== action ||
+        typeof payload.iat !== 'number' ||
+        typeof payload.nonce !== 'string' ||
+        payload.iat > now + 30 * 1000 ||
+        now - payload.iat > tokenTtlMs
+      ) {
+        return false;
+      }
+
+      this.cleanupUsedTokens(now, tokenTtlMs);
+      if (this.usedFormTokens.has(payload.nonce)) {
+        return false;
+      }
+
+      this.usedFormTokens.set(payload.nonce, now);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  private cleanupUsedTokens(now: number, tokenTtlMs: number): void {
+    for (const [nonce, createdAt] of this.usedFormTokens.entries()) {
+      if (now - createdAt > tokenTtlMs) {
+        this.usedFormTokens.delete(nonce);
+      }
+    }
+  }
+
+  private sign(value: string): string {
+    return createHmac('sha256', this.getTokenSecret())
+      .update(value)
+      .digest('base64url');
+  }
+
+  private getTokenSecret(): string {
+    return (
+      process.env.PUBLIC_FORM_TOKEN_SECRET ||
+      process.env.JWT_SECRET ||
+      this.fallbackTokenSecret
+    );
+  }
+
+  private base64UrlEncode(value: string): string {
+    return Buffer.from(value, 'utf8').toString('base64url');
+  }
+
+  private base64UrlDecode(value: string): string {
+    return Buffer.from(value, 'base64url').toString('utf8');
   }
 
   private isAllowedOrigin(origin?: string, referer?: string): boolean {

@@ -65,4 +65,8 @@ export class CreateOrderDTO {
   @IsString()
   @IsOptional()
   captchaToken?: string;
+
+  @IsString()
+  @IsOptional()
+  formToken?: string;
 }
