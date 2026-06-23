@@ -53,4 +53,16 @@ export class CreateOrderDTO {
   @ValidateNested()
   @Type(() => OrderHistoryItem)
   historyList: OrderHistoryItem[];
+
+  @IsString()
+  @IsOptional()
+  website?: string;
+
+  @IsString()
+  @IsOptional()
+  turnstileToken?: string;
+
+  @IsString()
+  @IsOptional()
+  captchaToken?: string;
 }

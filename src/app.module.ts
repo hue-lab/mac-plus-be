@@ -17,6 +17,7 @@ import { FieldModule } from './field/field.module';
 import { SeoModule } from './seo/seo.module';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SecurityModule } from './security/security.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
       ttl: 5,
       max: 10,
     }),
+    SecurityModule,
     UserModule,
     ProductModule,
     AuthModule,

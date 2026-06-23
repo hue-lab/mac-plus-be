@@ -19,6 +19,8 @@ import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { UpdateOrderDTO } from './dto/update-order.dto';
 import { GetOrdersDTO } from './dto/get-orders.dto';
+import { PublicForm } from '../security/public-form.decorator';
+import { PublicFormProtectionGuard } from '../security/public-form-protection.guard';
 
 @Controller('store/')
 export class OrderController {
@@ -50,6 +52,8 @@ export class OrderController {
   }
 
   @Post('order')
+  @PublicForm('order')
+  @UseGuards(PublicFormProtectionGuard)
   async addOrder(@Body() createOrderDTO: CreateOrderDTO): Promise<Order> {
     return this.orderService.addOrder(createOrderDTO);
   }
