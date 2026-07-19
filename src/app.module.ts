@@ -19,6 +19,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 import { SecurityModule } from './security/security.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { getClientIp } from './shared/client-ip';
+import { Request } from 'express';
 
 @Module({
   imports: [
@@ -35,7 +37,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       {
         name: 'default',
         ttl: 60_000,
-        limit: 120,
+        limit: 600,
+        getTracker: (request) => getClientIp(request as Request),
       },
     ]),
     SecurityModule,

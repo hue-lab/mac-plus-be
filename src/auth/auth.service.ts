@@ -10,6 +10,7 @@ import {
   RefreshTokenSession,
   RefreshTokenSessionDocument,
 } from './schema/refresh-token-session.schema';
+import { getClientIp } from '../shared/client-ip';
 
 interface LoginAttempt {
   count: number;
@@ -261,11 +262,6 @@ export class AuthService {
   }
 
   private getIp(request?: Request): string | undefined {
-    return (
-      request?.ip ||
-      request?.socket?.remoteAddress ||
-      request?.connection?.remoteAddress ||
-      'unknown'
-    )?.replace(/^::ffff:/, '');
+    return getClientIp(request);
   }
 }

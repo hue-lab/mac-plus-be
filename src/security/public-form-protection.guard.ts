@@ -14,6 +14,7 @@ import {
   PublicFormAction,
 } from './public-form.decorator';
 import { PublicFormProtectionService } from './public-form-protection.service';
+import { getClientIp } from '../shared/client-ip';
 
 @Injectable()
 export class PublicFormProtectionGuard implements CanActivate {
@@ -63,12 +64,6 @@ export class PublicFormProtectionGuard implements CanActivate {
   }
 
   private getIp(request: Request): string {
-    const ip =
-      request.ip ||
-      request.socket?.remoteAddress ||
-      request.connection?.remoteAddress ||
-      'unknown';
-
-    return ip.replace(/^::ffff:/, '');
+    return getClientIp(request);
   }
 }
