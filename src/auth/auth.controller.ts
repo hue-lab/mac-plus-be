@@ -17,6 +17,7 @@ import { CreateUserDTO } from '../user/dto/create-user-dto';
 import { LocalAuthGuard } from './guards/local.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { CurrentUser } from '../user/decorators/user.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -35,11 +36,13 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @UsePipes(new ValidationPipe())
+  @Throttle({ default: { limit: 10, ttl: 15 * 60_000 } })
   @Post('/login')
   async login(@Request() req) {
     return this.authService.login(req.user, req);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post('/refresh')
   async refresh(@Body('refreshToken') refreshToken: string, @Request() req) {
     return this.authService.refresh(refreshToken, req);

@@ -15,9 +15,10 @@ import { StoreConfigModule } from './storeConfig/storeConfig.module';
 import { MenuModule } from './menu/menu.module';
 import { FieldModule } from './field/field.module';
 import { SeoModule } from './seo/seo.module';
-import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
+import { APP_GUARD } from '@nestjs/core';
 import { SecurityModule } from './security/security.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -27,9 +28,16 @@ import { SecurityModule } from './security/security.module';
     MongooseModule.forRoot(getMongoDB().URI, { dbName: getMongoDB().DB }),
     CacheModule.register({
       isGlobal: true,
-      ttl: 5,
-      max: 10,
+      ttl: 60_000,
+      max: 100,
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
     SecurityModule,
     UserModule,
     ProductModule,
@@ -48,8 +56,8 @@ import { SecurityModule } from './security/security.module';
   controllers: [],
   providers: [
     {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
   exports: [],

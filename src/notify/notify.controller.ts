@@ -7,6 +7,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { PublicForm } from '../security/public-form.decorator';
 import { PublicFormProtectionGuard } from '../security/public-form-protection.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('notify')
 export class NotifyController {
@@ -20,6 +21,7 @@ export class NotifyController {
   }
 
   @Post('message')
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @PublicForm('quick-message')
   @UseGuards(PublicFormProtectionGuard)
   async notifyMessage(@Body() notifyMessageDTO: NotifyMessageDTO) {

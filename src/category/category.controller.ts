@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
@@ -20,6 +21,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { MoveCategoryDto } from './dto/move-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('store/category')
 export class CategoryController {
@@ -31,6 +33,8 @@ export class CategoryController {
   }
 
   @Get('/tree')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60_000)
   async getCategoriesTree(): Promise<Category> {
     const categoriesTree = await this.categoryService.getCategoriesTree();
     if (!categoriesTree) throw new NotFoundException('Root category not found');

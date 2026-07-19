@@ -2,6 +2,24 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+
+function getTrustProxy(): boolean | number | string {
+  const raw = process.env.TRUST_PROXY;
+  if (!raw) {
+    return 1;
+  }
+
+  if (raw === 'true' || raw === 'false') {
+    return raw === 'true';
+  }
+
+  if (/^\d+$/.test(raw)) {
+    return Number(raw);
+  }
+
+  return raw;
+}
 
 function getCorsOrigins(): string[] {
   const raw = process.env.CORS_ORIGINS;
@@ -34,7 +52,13 @@ function getCorsOrigins(): string[] {
 async function bootstrap() {
   const PORT = process.env.PORT || 5001;
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.set('trust proxy', process.env.TRUST_PROXY || 1);
+  app.set('trust proxy', getTrustProxy());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const corsOrigins = getCorsOrigins();
   app.enableCors({

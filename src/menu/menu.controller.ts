@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
@@ -20,6 +21,7 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
 import { Menu } from './schema/menu.schema';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { MoveMenuDto } from './dto/move-menu.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('store/menu')
 export class MenuController {
@@ -31,6 +33,8 @@ export class MenuController {
   }
 
   @Get('/tree')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60_000)
   async getMenusTree(): Promise<Menu> {
     const menusTree = await this.menuService.getMenusTree();
     if (!menusTree) throw new NotFoundException('Root menu not found');
@@ -45,6 +49,8 @@ export class MenuController {
   }
 
   @Get('/:code')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60_000)
   async getMenuByCode(@Param('code') code: string): Promise<Menu> {
     const menu = await this.menuService.getMenuByCode(code);
     if (!menu) throw new NotFoundException('Menu does not exist!');

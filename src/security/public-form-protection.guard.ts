@@ -63,21 +63,6 @@ export class PublicFormProtectionGuard implements CanActivate {
   }
 
   private getIp(request: Request): string {
-    const cloudflareIp = request.header('cf-connecting-ip');
-    if (cloudflareIp) {
-      return cloudflareIp.trim();
-    }
-
-    const realIp = request.header('x-real-ip');
-    if (realIp) {
-      return realIp.trim();
-    }
-
-    const forwardedFor = request.header('x-forwarded-for');
-    if (forwardedFor) {
-      return forwardedFor.split(',')[0].trim();
-    }
-
     const ip =
       request.ip ||
       request.socket?.remoteAddress ||

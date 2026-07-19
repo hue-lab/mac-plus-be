@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FieldService } from "./field.service";
 import { FieldDocument } from "./schema/field.schema";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
@@ -9,6 +9,7 @@ import { FieldDTO } from "./dto/field.dto";
 import { IdValidationPipe } from "../helpers/pipes/idValidation.pipe";
 import { GetFieldsDto } from "./dto/getFields.dto";
 import { FieldsResponseDTO } from "./dto/foeldsResponse.dto";
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('field')
 export class FieldController {
@@ -20,6 +21,8 @@ export class FieldController {
   }
 
   @Get('object')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60_000)
   async getFields(@Query() getFieldsDTO: GetFieldsDto): Promise<FieldsResponseDTO> {
     return this.fieldService.getFieldsObject(getFieldsDTO);
   }
