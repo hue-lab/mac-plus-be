@@ -37,7 +37,7 @@ import { Request } from 'express';
       {
         name: 'default',
         ttl: 60_000,
-        limit: 600,
+        limit: 1000,
         getTracker: (request) => getClientIp(request as Request),
       },
     ]),
