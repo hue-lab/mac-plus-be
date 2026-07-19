@@ -21,7 +21,6 @@ import { UpdateOrderDTO } from './dto/update-order.dto';
 import { GetOrdersDTO } from './dto/get-orders.dto';
 import { PublicForm } from '../security/public-form.decorator';
 import { PublicFormProtectionGuard } from '../security/public-form-protection.guard';
-import { Throttle } from '@nestjs/throttler';
 
 @Controller('store/')
 export class OrderController {
@@ -53,7 +52,6 @@ export class OrderController {
   }
 
   @Post('order')
-  @Throttle({ default: { limit: 20, ttl: 5 * 60_000 } })
   @PublicForm('order')
   @UseGuards(PublicFormProtectionGuard)
   async addOrder(@Body() createOrderDTO: CreateOrderDTO): Promise<Order> {

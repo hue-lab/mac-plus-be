@@ -16,11 +16,7 @@ import { MenuModule } from './menu/menu.module';
 import { FieldModule } from './field/field.module';
 import { SeoModule } from './seo/seo.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import { APP_GUARD } from '@nestjs/core';
 import { SecurityModule } from './security/security.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { getClientIp } from './shared/client-ip';
-import { Request } from 'express';
 
 @Module({
   imports: [
@@ -33,14 +29,6 @@ import { Request } from 'express';
       ttl: 60_000,
       max: 100,
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'default',
-        ttl: 60_000,
-        limit: 1000,
-        getTracker: (request) => getClientIp(request as Request),
-      },
-    ]),
     SecurityModule,
     UserModule,
     ProductModule,
@@ -57,12 +45,7 @@ import { Request } from 'express';
     SeoModule,
   ],
   controllers: [],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [],
   exports: [],
 })
 export class AppModule {}
