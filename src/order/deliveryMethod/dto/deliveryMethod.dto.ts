@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -7,7 +8,9 @@ import {
 } from 'class-validator';
 
 export class DeliveryMethodDTO {
-  _id: string;
+  @IsOptional()
+  @IsMongoId()
+  _id?: string;
 
   @IsString()
   @IsNotEmpty()

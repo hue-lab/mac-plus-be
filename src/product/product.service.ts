@@ -61,6 +61,25 @@ export class ProductService {
       .aggregate([
         { $match: { _id: { $in: productIds } } },
         {
+          $lookup: {
+            from: 'categories',
+            localField: 'categoryId',
+            foreignField: '_id',
+            as: 'category',
+            pipeline: [{ $project: { _id: 1, isHidden: 1 } }],
+          },
+        },
+        { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+        {
+          $match: {
+            isStock: true,
+            $or: [
+              { 'category.isHidden': { $ne: true } },
+              { category: { $eq: null } },
+            ],
+          },
+        },
+        {
           $project: {
             categoryId: 1,
             totalPrice: 1,
@@ -75,6 +94,30 @@ export class ProductService {
       { $match: { _id: { $in: productIds } } },
       {
         $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'categoryAvailability',
+          pipeline: [{ $project: { _id: 1, isHidden: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: '$categoryAvailability',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          isStock: true,
+          $or: [
+            { 'categoryAvailability.isHidden': { $ne: true } },
+            { categoryAvailability: { $eq: null } },
+          ],
+        },
+      },
+      {
+        $lookup: {
           from: 'brands',
           localField: 'brand',
           foreignField: '_id',
@@ -82,6 +125,7 @@ export class ProductService {
         },
       },
       { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
+      { $unset: 'categoryAvailability' },
     ]);
   }
 

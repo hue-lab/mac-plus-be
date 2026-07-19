@@ -47,12 +47,19 @@ export class PublicFormProtectionGuard implements CanActivate {
 
     if (block.reason === 'rate-limit') {
       throw new HttpException(
-        'Too many requests. Please try again later.',
+        {
+          message: 'Too many requests. Please try again later.',
+          reason: block.reason,
+          key: block.key,
+        },
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
 
-    throw new ForbiddenException('Request rejected.');
+    throw new ForbiddenException({
+      message: 'Request rejected.',
+      reason: block.reason,
+    });
   }
 
   private getIp(request: Request): string {

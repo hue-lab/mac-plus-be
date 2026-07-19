@@ -1,11 +1,19 @@
-import { Global, Injectable } from '@nestjs/common';
-import { TotalDiscountDTO } from './dto/totalDiscount.dto';
+import { BadRequestException, Global, Injectable } from '@nestjs/common';
+import {
+  TotalDiscountDTO,
+  TotalDiscountProductDTO,
+} from './dto/totalDiscount.dto';
 import { DiscountConfigService } from '../storeConfig/discountConfig/discountConfig.service';
 import { ProductService } from '../product/product.service';
 import mongoose from 'mongoose';
 import { ITotal } from './interfaces/total.interface';
 import { DeliveryMethodService } from '../order/deliveryMethod/deliveryMethod.service';
 import { DeliveryMethodDTO } from '../order/deliveryMethod/dto/deliveryMethod.dto';
+
+export interface NormalizedCartItem {
+  productId: string;
+  count: number;
+}
 
 @Global()
 @Injectable()
@@ -24,30 +32,43 @@ export class CalculationService {
     let deliveryPrice = 0;
     let deliveryThreshold = 0;
 
-    const productIds: mongoose.Types.ObjectId[] = [];
-    totalDiscountDTO.products.forEach((query) => {
-      const id = query.productId;
-      (query.productId as unknown) = new mongoose.Types.ObjectId(id);
-      productIds.push(query.productId as any);
-    });
+    const productsInput = this.normalizeCartItems(totalDiscountDTO.products);
+    const productIds = productsInput.map(
+      (query) => new mongoose.Types.ObjectId(query.productId),
+    );
 
     if (totalDiscountDTO.deliveryMethod) {
+      if (!mongoose.Types.ObjectId.isValid(totalDiscountDTO.deliveryMethod)) {
+        throw new BadRequestException('Invalid delivery method');
+      }
+
       const deliveryMethod: DeliveryMethodDTO[] =
         await this.deliveryMethodService.getDeliveryMethodById(
           totalDiscountDTO.deliveryMethod,
         );
+      if (!deliveryMethod?.[0]) {
+        throw new BadRequestException('Delivery method does not exist');
+      }
+
       deliveryPrice = deliveryMethod[0]?.deliveryPrice || 0;
       deliveryThreshold = deliveryMethod[0]?.deliveryThreshold || 0;
     }
 
     const discountConfig = await this.discountConfigService.getDiscountConfig();
     const products = await this.productService.getProductsByIds(productIds);
+    if (products.length !== productsInput.length) {
+      throw new BadRequestException(
+        'One or more products do not exist or are unavailable',
+      );
+    }
 
     products.map((product) => {
-      product.count = totalDiscountDTO.products.find(
+      product.count = productsInput.find(
         (el) => el.productId.toString() === product._id.toString(),
-      ).count;
-      delete product._id;
+      )?.count;
+      if (!product.count) {
+        throw new BadRequestException('Invalid cart item');
+      }
       totalItemsCount += product.count;
       orderPrice += product.totalPrice * product.count;
     });
@@ -117,5 +138,35 @@ export class CalculationService {
     };
     isOrder ? (result.products = productsList) : null;
     return result;
+  }
+
+  normalizeCartItems(products: TotalDiscountProductDTO[]): NormalizedCartItem[] {
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new BadRequestException('Cart must contain at least one item');
+    }
+
+    const grouped = new Map<string, number>();
+    products.forEach((item) => {
+      if (!mongoose.Types.ObjectId.isValid(item?.productId)) {
+        throw new BadRequestException('Invalid product id');
+      }
+
+      if (!Number.isInteger(item?.count) || item.count < 1 || item.count > 99) {
+        throw new BadRequestException('Invalid product count');
+      }
+
+      const current = grouped.get(item.productId) || 0;
+      const next = current + item.count;
+      if (next > 99) {
+        throw new BadRequestException('Invalid product count');
+      }
+
+      grouped.set(item.productId, next);
+    });
+
+    return [...grouped.entries()].map(([productId, count]) => ({
+      productId,
+      count,
+    }));
   }
 }

@@ -4,6 +4,10 @@
 /storage
 /docker
 /db
+certs/
+*.key
+*.pem
+*.crt
 .env.local
 .env
 /data

@@ -37,7 +37,17 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   @Post('/login')
   async login(@Request() req) {
-    return this.authService.login(req.user);
+    return this.authService.login(req.user, req);
+  }
+
+  @Post('/refresh')
+  async refresh(@Body('refreshToken') refreshToken: string, @Request() req) {
+    return this.authService.refresh(refreshToken, req);
+  }
+
+  @Post('/logout')
+  async logout(@Body('refreshToken') refreshToken?: string) {
+    return this.authService.logout(refreshToken);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

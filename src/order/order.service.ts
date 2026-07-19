@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Model, PipelineStage } from 'mongoose';
 import { Order } from './schema/order.schema';
 import { CreateOrderDTO } from './dto/create-order.dto';
@@ -12,6 +12,10 @@ import { UpdateOrderDTO } from './dto/update-order.dto';
 import { GetOrdersDTO, OrderSortProperties } from './dto/get-orders.dto';
 import { paginate } from '../helpers/functions/paginate.func';
 import { TotalCartItem } from '../shared/interfaces/totalCartItem.interface';
+import { DeliveryMethodService } from './deliveryMethod/deliveryMethod.service';
+import { PaymentMethodService } from './paymentMethod/paymentMethod.service';
+import { StateColor } from './enums/stateColor.enum';
+import { OrderHistoryEnum } from './enums/orderHistory.enum';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +23,8 @@ export class OrderService {
     @InjectModel('Order') private readonly orderModel: Model<Order>,
     private readonly notifyService: NotifyService,
     private readonly calculationService: CalculationService,
+    private readonly deliveryMethodService: DeliveryMethodService,
+    private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
   async getOrders(getOrdersDTO: GetOrdersDTO): Promise<Order[]> {
@@ -56,48 +62,93 @@ export class OrderService {
   }
 
   async addOrder(createOrderDTO: CreateOrderDTO): Promise<Order> {
-    const orderCode = nanoid(6);
-    const checkCode = await this.isUnique(orderCode);
-    if (checkCode && checkCode.length !== 0) {
-      return this.addOrder(createOrderDTO);
+    const orderCode = await this.generateUniqueOrderCode();
+    const cartItems = this.calculationService.normalizeCartItems(
+      createOrderDTO.cartItems,
+    );
+    const deliveryMethodId = createOrderDTO.delivery?.deliveryMethod?._id;
+    const paymentMethodId = createOrderDTO.paymentMethod?._id;
+
+    if (!deliveryMethodId) {
+      throw new BadRequestException('Delivery method is required');
     }
-    createOrderDTO.orderCode = orderCode;
+
+    if (!paymentMethodId) {
+      throw new BadRequestException('Payment method is required');
+    }
+
+    const deliveryMethod = (
+      await this.deliveryMethodService.getDeliveryMethodById(deliveryMethodId)
+    )?.[0];
+    if (!deliveryMethod) {
+      throw new BadRequestException('Delivery method does not exist');
+    }
+
+    const paymentMethod =
+      await this.paymentMethodService.getPaymentMethodById(paymentMethodId);
+    if (!paymentMethod) {
+      throw new BadRequestException('Payment method does not exist');
+    }
+    const paymentMethodData =
+      typeof (paymentMethod as any).toObject === 'function'
+        ? (paymentMethod as any).toObject()
+        : paymentMethod;
+
+    const allowedPaymentMethodIds = (deliveryMethod.paymentMethods || []).map(
+      (method: any) => (method?._id || method).toString(),
+    );
+    if (!allowedPaymentMethodIds.includes(paymentMethodId.toString())) {
+      throw new BadRequestException(
+        'Payment method is not available for selected delivery method',
+      );
+    }
+
     const calculation = await this.calculationService.getTotalDiscount(
       {
-        products: createOrderDTO.cartItems,
-        deliveryMethod: createOrderDTO.delivery.deliveryMethod._id,
+        products: cartItems,
+        deliveryMethod: deliveryMethodId,
       },
       true,
     );
     const extendedDelivery = {
-      ...createOrderDTO.delivery,
+      deliveryData: createOrderDTO.delivery.deliveryData,
+      comment: createOrderDTO.delivery.comment,
       deliveryMethod: {
-        ...createOrderDTO.delivery.deliveryMethod,
+        ...deliveryMethod,
         deliveryPrice: calculation.deliveryPrice,
       },
     };
-    Object.assign(createOrderDTO, {
+    const orderToCreate = {
       orderCode,
-      cartItems: createOrderDTO.cartItems.map((cartItem) => ({
+      customer: createOrderDTO.customer,
+      state: this.getInitialState(),
+      delivery: extendedDelivery,
+      paymentMethod: paymentMethodData,
+      cartItems: cartItems.map((cartItem) => ({
         product: calculation.products.find(
           (product: IProduct) =>
             product._id.toString() === cartItem.productId.toString(),
         ),
         count: cartItem.count,
       })),
-      delivery: extendedDelivery,
       subTotalPrice: calculation.orderPrice,
       totalPrice: calculation.totalPrice,
       totalDiscount: calculation.totalDiscount,
-    });
+      historyList: [
+        {
+          type: OrderHistoryEnum.Pending,
+          time: Date.now(),
+        },
+      ],
+    };
 
-    const newOrder = await this.orderModel.create(createOrderDTO);
+    const newOrder = await this.orderModel.create(orderToCreate);
     try {
       const notify: NotifyDTO = {
-        customer: createOrderDTO.customer,
+        customer: orderToCreate.customer,
         orderCode,
         delivery: extendedDelivery,
-        paymentMethod: createOrderDTO.paymentMethod,
+        paymentMethod: paymentMethodData,
         totalDiscount: calculation.totalDiscount,
         totalPrice: calculation.totalPrice,
         products: (newOrder.cartItems as TotalCartItem[])
@@ -113,6 +164,27 @@ export class OrderService {
 
   async isUnique(orderCode: string) {
     return this.orderModel.find({ orderCode: orderCode });
+  }
+
+  private async generateUniqueOrderCode(): Promise<string> {
+    const maxAttempts = 5;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const orderCode = nanoid(6);
+      const existingOrder = await this.orderModel.exists({ orderCode }).exec();
+      if (!existingOrder) {
+        return orderCode;
+      }
+    }
+
+    throw new BadRequestException('Cannot generate unique order code');
+  }
+
+  private getInitialState() {
+    return {
+      label: 'Ожидание',
+      color: StateColor.Neutral,
+      description: 'Ожидайте звонка оператора',
+    };
   }
 
   async updateOrder(
