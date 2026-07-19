@@ -12,7 +12,11 @@ function getCorsOrigins(): string[] {
       .filter(Boolean);
   }
 
-  const origins = ['https://macplus.by', 'https://www.macplus.by'];
+  const origins = [
+    'https://macplus.by',
+    'https://www.macplus.by',
+    'https://admin.macplus.by',
+  ];
   if (process.env.NODE_ENV !== 'prod') {
     origins.push(
       'http://localhost:3000',
