@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import mongoose, { Model, PipelineStage } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
@@ -11,18 +16,35 @@ import { CreateProductDTO } from './dto/createProduct.dto';
 import { objectIdProperties } from './const/object-id-properties.const';
 import { normalizeSearch, transliterate } from './transliteration.func';
 import { paginate } from '../helpers/functions/paginate.func';
+import {
+  normalizeSeo,
+  normalizeStoredSeoUrls,
+} from '../helpers/functions/seoUrl.func';
 import { BasePropertyName, ComparisonOperator } from './enums/product.enum';
 import { CategoryService } from '../category/category.service';
 import { nestedCategoriesList } from '../shared/functions/nested-categories-list.func';
 import { Category, CategoryDocument } from '../category/schema/category.schema';
 
 @Injectable()
-export class ProductService {
+export class ProductService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(ProductService.name);
+
   constructor(
     @InjectModel('Product')
     private readonly productModel: Model<ProductDocument>,
     private categoryService: CategoryService,
   ) {}
+
+  onApplicationBootstrap() {
+    normalizeStoredSeoUrls(this.productModel)
+      .then((count) => {
+        if (count)
+          this.logger.log(`Normalized seo.seoUrl of ${count} products`);
+      })
+      .catch((err) =>
+        this.logger.error(`seo.seoUrl normalization failed: ${err}`),
+      );
+  }
 
   async totalCount(options?) {
     return this.productModel.count(options).exec();
@@ -261,7 +283,9 @@ export class ProductService {
   }
 
   async addProduct(createProductDTO: CreateProductDTO): Promise<Product> {
-    const newProduct = await this.productModel.create(createProductDTO);
+    const newProduct = await this.productModel.create(
+      normalizeSeo(createProductDTO),
+    );
     return newProduct.save();
   }
 
@@ -269,9 +293,13 @@ export class ProductService {
     id: string,
     createProductDTO: CreateProductDTO,
   ): Promise<Product> {
-    return this.productModel.findByIdAndUpdate(id, createProductDTO, {
-      new: true,
-    });
+    return this.productModel.findByIdAndUpdate(
+      id,
+      normalizeSeo(createProductDTO),
+      {
+        new: true,
+      },
+    );
   }
 
   async updateProductPartial(
@@ -282,7 +310,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
-    Object.assign(product, updateProductDTO);
+    Object.assign(product, normalizeSeo(updateProductDTO));
     return product.save();
   }
 

@@ -1,17 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 import { Article, ArticleDocument } from './schema/article.schema';
 import { ArticleDTO } from './dto/article.dto';
 import { FilterArticleDTO } from './dto/filterArticle.dto.';
 import { paginate } from '../helpers/functions/paginate.func';
+import {
+  normalizeSeo,
+  normalizeStoredSeoUrls,
+} from '../helpers/functions/seoUrl.func';
 
 @Injectable()
-export class ArticleService {
+export class ArticleService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(ArticleService.name);
+
   constructor(
     @InjectModel('Article')
     private readonly articleModel: Model<ArticleDocument>,
   ) {}
+
+  onApplicationBootstrap() {
+    normalizeStoredSeoUrls(this.articleModel)
+      .then((count) => {
+        if (count)
+          this.logger.log(`Normalized seo.seoUrl of ${count} articles`);
+      })
+      .catch((err) =>
+        this.logger.error(`seo.seoUrl normalization failed: ${err}`),
+      );
+  }
 
   async getArticles(filterArticleDTO: FilterArticleDTO) {
     const page: number = parseInt(filterArticleDTO.page as any) || 1;
@@ -141,12 +158,14 @@ export class ArticleService {
   }
 
   async addArticle(articleDto: ArticleDTO): Promise<Article> {
-    const newArticle = await this.articleModel.create(articleDto);
+    const newArticle = await this.articleModel.create(normalizeSeo(articleDto));
     return newArticle.save();
   }
 
   async updateArticle(id: string, articleDto: ArticleDTO): Promise<Article> {
-    return this.articleModel.findByIdAndUpdate(id, articleDto, { new: true });
+    return this.articleModel.findByIdAndUpdate(id, normalizeSeo(articleDto), {
+      new: true,
+    });
   }
 
   async deleteArticle(id: string) {
