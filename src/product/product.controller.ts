@@ -9,10 +9,14 @@ import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { Product } from './schema/product.schema';
 import { GetProductsDTO } from './dto/filterProduct.dto';
 import { Category } from "../category/schema/category.schema";
+import { CatalogueSeoService } from './catalogue-seo.service';
 
 @Controller('store/')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private catalogueSeo: CatalogueSeoService,
+  ) {}
 
   @Get('product/:id')
   async getProduct(@Param('id') id: string): Promise<Product> {
@@ -22,8 +26,20 @@ export class ProductController {
   }
 
   @Get('item')
-  async getItem(@Query('slug') slug: string): Promise<Product | Category> {
-    return await this.productService.getItemBySlug(slug);
+  async getItem(@Query('slug') slug: string) {
+    if (!slug || typeof slug !== 'string') throw new NotFoundException();
+    const route = await this.catalogueSeo.find(slug);
+    const item = await this.productService.getItemBySlug(route?.sourcePath || slug);
+    if (!route) return item;
+    const product = item as Product & { category?: Category };
+    const category = product.category && await this.catalogueSeo.find(product.category.handle);
+    const data = 'toObject' in item ? (item.toObject as () => object)() : item;
+    return { ...data, catalogueRoute: route, categoryPublicPath: category?.publicPath };
+  }
+
+  @Get('catalogue/seo-paths')
+  async getCatalogueSeoPaths() {
+    return this.catalogueSeo.indexablePaths();
   }
 
   @Get('autocomplete/:search')
@@ -42,7 +58,15 @@ export class ProductController {
 
   @Post('products/')
   async getProducts(@Body() getProductsDTO: GetProductsDTO) {
-    return await this.productService.getProducts(getProductsDTO);
+    const result = await this.productService.getProducts(getProductsDTO);
+    if (getProductsDTO.storefrontListing) {
+      await Promise.all(result.data.map(async (product) => {
+        const path = [product.categoryHandle, product.seo?.seoUrl].filter(Boolean).join('/');
+        const route = await this.catalogueSeo.find(path);
+        if (route) product.publicPath = route.publicPath;
+      }));
+    }
+    return result;
   }
 
   @Put('product/:id')

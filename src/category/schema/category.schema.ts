@@ -36,6 +36,9 @@ export class Category {
   @Prop({ type: Boolean })
   isHidden?: boolean;
 
+  @Prop({ type: Boolean })
+  variantCanonicals?: boolean;
+
   @Prop([
     { type: SchemaTypes.ObjectId, ref: Category.name, autopopulate: true },
   ])
