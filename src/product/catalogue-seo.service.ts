@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Category, CategoryDocument } from '../category/schema/category.schema';
 import { ProductDocument } from './schema/product.schema';
 import { ProductTypeDocument } from './productType/schema/productType.schema';
+import { ProductTypePropertyDocument } from './productTypeProperty/schema/ProductTypeProperty.schema';
 
 export interface CatalogueRoute {
   sourcePath: string;
@@ -16,6 +17,7 @@ type ProductRow = Pick<ProductDocument, '_id' | 'categoryId' | 'productTypeId' |
 type TypeRow = Pick<ProductTypeDocument, 'canonicalColorProperty' | 'canonicalVariantProperties'> & {
   properties: unknown[];
 };
+type VariantRule = { color?: string; dimensions: string[] };
 
 const INDEX_TTL = 5 * 60 * 1000;
 
@@ -38,6 +40,8 @@ export class CatalogueSeoService {
     @InjectModel('Category') private readonly categories: Model<CategoryDocument>,
     @InjectModel('Product') private readonly products: Model<ProductDocument>,
     @InjectModel('ProductType') private readonly types: Model<ProductTypeDocument>,
+    @InjectModel('ProductTypeProperty')
+    private readonly properties: Model<ProductTypePropertyDocument>,
   ) {}
 
   async find(path: string) {
@@ -77,11 +81,14 @@ export class CatalogueSeoService {
   }
 
   private async buildRoutes() {
-    const [categories, products, types] = await Promise.all([
+    const [categories, products, types, properties] = await Promise.all([
       this.categories.find({}, 'handle root isHidden children variantCanonicals', { autopopulate: false }).lean().exec(),
       this.products.find({}, 'categoryId productTypeId productProps seo.seoUrl').sort({ _id: 1 }).lean().exec(),
-      this.types.find({ canonicalColorProperty: { $type: 'string' } },
+      this.types.find({},
         'canonicalColorProperty canonicalVariantProperties properties').lean().exec(),
+      this.properties.find({
+        $or: [{ groupVariants: true }, { code: 'memory' }],
+      }, 'code groupVariants').lean().exec(),
     ]);
     const byCategory = new Map<string, ProductRow[]>();
     for (const product of products) {
@@ -90,7 +97,8 @@ export class CatalogueSeoService {
       group.push(product);
       byCategory.set(category, group);
     }
-    const typeById = new Map(types.map((type) => [String(type._id), type]));
+    const propertiesById = new Map(properties.map(({ _id, ...property }) => [String(_id), property]));
+    const rulesByType = new Map(types.map((type) => [String(type._id), this.variantRule(type, propertiesById)]));
     const routes = new Map<string, CatalogueRoute>();
     const categoriesById = new Map(categories.map((category) => [String(category._id), category]));
 
@@ -136,24 +144,42 @@ export class CatalogueSeoService {
       if (!category.variantCanonicals || !categoryRoute?.indexable || !siblings || siblings.length < 2) continue;
       const productTypeId = siblings[0].productTypeId;
       if (!productTypeId || siblings.some((product) => product.productTypeId !== productTypeId)) continue;
-      const type = typeById.get(productTypeId);
-      if (type) this.applyVariantCanonicals(categoryRoute, siblings, type, routes);
+      const rule = rulesByType.get(productTypeId);
+      if (rule) this.applyVariantCanonicals(categoryRoute, siblings, rule, routes);
     }
     return routes;
+  }
+
+  private variantRule(
+    type: TypeRow,
+    properties: Map<string, { code?: string; groupVariants?: boolean }>,
+  ): VariantRule | undefined {
+    const ids = [...new Set((type.properties || []).map(String))];
+    const marked = ids.filter((id) => properties.get(id)?.groupVariants);
+
+    const color = type.canonicalColorProperty;
+    if (!marked.length && color) {
+      const dimensions = type.canonicalVariantProperties || [];
+      if (ids.includes(color) && dimensions.every((id) => id !== color && ids.includes(id))) {
+        return { color, dimensions };
+      }
+      return;
+    }
+
+    const memory = ids.filter((id) => properties.get(id)?.code === 'memory');
+    if (memory.length === 1 && properties.get(memory[0])?.groupVariants === undefined) {
+      marked.push(memory[0]);
+    }
+    return marked.length ? { dimensions: marked } : undefined;
   }
 
   private applyVariantCanonicals(
     category: CatalogueRoute,
     products: ProductRow[],
-    type: TypeRow,
+    { color, dimensions }: VariantRule,
     routes: Map<string, CatalogueRoute>,
   ) {
-    const color = type.canonicalColorProperty;
-    const dimensions = type.canonicalVariantProperties || [];
-    const declared = new Set((type.properties || []).map(String));
-    if (!color || !declared.has(color) || dimensions.some((id) => id === color || !declared.has(id))) return;
-
-    const groups = new Map<string, { color: string; route: CatalogueRoute }[]>();
+    const groups = new Map<string, { color?: string; route: CatalogueRoute }[]>();
     const seen = new Set<CatalogueRoute>();
     for (const product of products) {
       const slug = product.seo?.seoUrl;
@@ -161,9 +187,9 @@ export class CatalogueSeoService {
       const values = new Map((product.productProps || []).map((prop) => [
         String(prop.productTypePropertyId), normalizedValue(prop.value),
       ]));
-      const colorValue = values.get(color);
+      const colorValue = color ? values.get(color) : undefined;
       const signature = dimensions.map((id) => values.get(id));
-      if (!route || !colorValue || signature.some((value) => value === undefined) || seen.has(route)) return;
+      if (!route || (color && !colorValue) || signature.some((value) => value === undefined) || seen.has(route)) return;
       seen.add(route);
       const key = JSON.stringify(signature);
       const group = groups.get(key) || [];
@@ -171,7 +197,8 @@ export class CatalogueSeoService {
       groups.set(key, group);
     }
     for (const group of groups.values()) {
-      if (new Set(group.map((entry) => entry.color)).size < 2) continue;
+      const variants = color ? new Set(group.map((entry) => entry.color)).size : group.length;
+      if (variants < 2) continue;
       const target = groups.size === 1 ? category.publicPath : group[0].route.publicPath;
       for (const entry of group) entry.route.canonicalPath = target;
     }
