@@ -7,13 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          registry: docker.pkg.github.com
+          registry: ghcr.io
           name: hue-lab/mac-plus-be/image
           username: ${{ github.actor }}
-          password: ${{ secrets.CI_CD_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           tags: 'production'
