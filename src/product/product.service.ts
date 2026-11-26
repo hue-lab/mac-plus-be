@@ -541,7 +541,7 @@ export class ProductService implements OnApplicationBootstrap {
       aggregate.push(sortOperator);
     }
 
-    if (getProductsDTO.preview) {
+    if (getProductsDTO.preview || getProductsDTO.storefrontListing) {
       aggregate.push(
         { $unset: ['productTypeId', 'productProps'] },
         {
@@ -568,6 +568,19 @@ export class ProductService implements OnApplicationBootstrap {
           },
         },
       );
+    }
+
+    if (getProductsDTO.storefrontListing) {
+      aggregate.push({
+        $project: {
+          name: 1, media: 1, price: 1, totalPrice: 1, discount: 1,
+          isNew: 1, isRec: 1, isStock: 1,
+          ...(getProductsDTO.listingDescriptions && { description: 1 }),
+          categoryName: 1, categoryHandle: 1,
+          'brand.name': 1, 'seo.seoUrl': 1, 'seo.seoTitle': 1,
+          'seo.seoImage': { $slice: [{ $ifNull: ['$seo.seoImage', []] }, 1] },
+        },
+      });
     }
 
     paginate(aggregate, page, limit);

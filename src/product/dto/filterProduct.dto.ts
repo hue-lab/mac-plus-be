@@ -54,6 +54,14 @@ export class GetProductsDTO {
   @IsOptional()
   preview?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  storefrontListing?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  listingDescriptions?: boolean;
+
   @ValidateNested()
   @Type(() => GetProductsSortDTO)
   @IsOptional()

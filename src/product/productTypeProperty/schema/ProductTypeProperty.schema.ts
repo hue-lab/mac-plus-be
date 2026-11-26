@@ -12,6 +12,9 @@ export class ProductTypeProperty {
   @Prop({ type: Boolean })
   showFilter: boolean;
 
+  @Prop({ type: Boolean })
+  groupVariants?: boolean;
+
   @Prop({ type: String })
   name: string;
 

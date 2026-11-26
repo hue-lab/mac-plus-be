@@ -14,6 +14,12 @@ export class ProductType {
 
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'ProductTypeProperty' })
   properties: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({ type: String })
+  canonicalColorProperty?: string;
+
+  @Prop({ type: [String], default: undefined })
+  canonicalVariantProperties?: string[];
 }
 
 export const ProductTypeSchema = SchemaFactory.createForClass(ProductType);

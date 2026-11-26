@@ -44,6 +44,10 @@ export class UpdateCategoryDto {
   isHidden?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  variantCanonicals?: boolean;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   children?: string[];

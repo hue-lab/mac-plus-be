@@ -15,10 +15,12 @@ import {ProductTypeController} from "./productType/productType.controller";
 import {ProductTypePropertyController} from "./productTypeProperty/productTypeProperty.controller";
 import {ProductTypePropertyService} from "./productTypeProperty/productTypeProperty.service";
 import { CategoryModule } from "../category/category.module";
+import { CatalogueSeoModule } from './catalogue-seo.module';
 
 @Module({
   imports: [
     CategoryModule,
+    CatalogueSeoModule,
     MongooseModule.forFeature([
       {name: 'Product', schema: ProductSchema},
       {name: 'Brand', schema: BrandSchema},

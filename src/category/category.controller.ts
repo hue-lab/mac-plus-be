@@ -8,12 +8,13 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { Category } from './schema/category.schema';
+import { Category, CategoryDocument } from './schema/category.schema';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role } from '../auth/enums/role.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,10 +23,14 @@ import { IdValidationPipe } from '../helpers/pipes/idValidation.pipe';
 import { MoveCategoryDto } from './dto/move-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { CatalogueSeoService } from '../product/catalogue-seo.service';
 
 @Controller('store/category')
 export class CategoryController {
-  constructor(private categoryService: CategoryService) {}
+  constructor(
+    private categoryService: CategoryService,
+    private catalogueSeo: CatalogueSeoService,
+  ) {}
 
   @Get('/')
   async getCategories(): Promise<Category[]> {
@@ -35,10 +40,12 @@ export class CategoryController {
   @Get('/tree')
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60_000)
-  async getCategoriesTree(): Promise<Category> {
+  async getCategoriesTree(@Query('storefront') storefront?: string): Promise<Category> {
     const categoriesTree = await this.categoryService.getCategoriesTree();
     if (!categoriesTree) throw new NotFoundException('Root category not found');
-    return categoriesTree;
+    return storefront === '1'
+      ? this.catalogueSeo.publicTree((categoriesTree as CategoryDocument).toObject())
+      : categoriesTree;
   }
 
   @Get('/:id')

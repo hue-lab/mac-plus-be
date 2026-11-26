@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -14,6 +15,10 @@ export class ProductTypePropertyDTO {
 
   @IsNotEmpty()
   showFilter: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  groupVariants?: boolean;
 
   @IsNotEmpty()
   name: string;

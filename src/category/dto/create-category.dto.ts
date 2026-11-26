@@ -48,6 +48,10 @@ export class CreateCategoryDto {
   isHidden?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  variantCanonicals?: boolean;
+
+  @IsOptional()
   @IsString()
   productTypeId?: string;
 

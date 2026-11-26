@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ArrayUnique, IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ProductTypeDTO {
   @IsString()
@@ -12,4 +12,14 @@ export class ProductTypeDTO {
   @IsNotEmpty()
   @IsArray()
   properties: string[];
+
+  @IsOptional()
+  @IsMongoId()
+  canonicalColorProperty?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsMongoId({ each: true })
+  canonicalVariantProperties?: string[];
 }
