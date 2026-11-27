@@ -59,7 +59,7 @@ export class ProductController {
   @Post('products/')
   async getProducts(@Body() getProductsDTO: GetProductsDTO) {
     const result = await this.productService.getProducts(getProductsDTO);
-    if (getProductsDTO.storefrontListing) {
+    if (getProductsDTO.storefrontListing || getProductsDTO.preview) {
       await Promise.all(result.data.map(async (product) => {
         const path = [product.categoryHandle, product.seo?.seoUrl].filter(Boolean).join('/');
         const route = await this.catalogueSeo.find(path);

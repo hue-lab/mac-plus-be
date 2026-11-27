@@ -17,7 +17,7 @@ type ProductRow = Pick<ProductDocument, '_id' | 'categoryId' | 'productTypeId' |
 type TypeRow = Pick<ProductTypeDocument, 'canonicalColorProperty' | 'canonicalVariantProperties'> & {
   properties: unknown[];
 };
-type VariantRule = { color?: string; dimensions: string[] };
+type VariantRule = { color: string; required: string[] };
 
 const INDEX_TTL = 5 * 60 * 1000;
 
@@ -87,7 +87,7 @@ export class CatalogueSeoService {
       this.types.find({},
         'canonicalColorProperty canonicalVariantProperties properties').lean().exec(),
       this.properties.find({
-        $or: [{ groupVariants: true }, { code: 'memory' }],
+        $or: [{ groupVariants: true }, { code: { $in: ['color', 'memory'] } }],
       }, 'code groupVariants').lean().exec(),
     ]);
     const byCategory = new Map<string, ProductRow[]>();
@@ -101,6 +101,15 @@ export class CatalogueSeoService {
     const rulesByType = new Map(types.map((type) => [String(type._id), this.variantRule(type, propertiesById)]));
     const routes = new Map<string, CatalogueRoute>();
     const categoriesById = new Map(categories.map((category) => [String(category._id), category]));
+    const parents = new Map<string, string | null>();
+    for (const category of categories) {
+      if (category.root || !category.handle) continue;
+      for (const child of category.children || []) {
+        const id = String(child);
+        if (id === String(category._id)) continue;
+        parents.set(id, parents.has(id) ? null : category.handle);
+      }
+    }
 
     const hasProducts = (id: string, visited = new Set<string>()): boolean => {
       const category = categoriesById.get(id);
@@ -109,39 +118,61 @@ export class CatalogueSeoService {
       return !!byCategory.get(id)?.length ||
         (category.children || []).some((child) => hasProducts(String(child), visited));
     };
-    const addRoute = (path: string, indexable: boolean) => {
+    const publicCandidates = new Map<CatalogueRoute, { path: string; category?: CatalogueRoute }>();
+    const addRoute = (path: string, publicPath: string, indexable: boolean, category?: CatalogueRoute) => {
       if (!path || routes.has(path)) return;
-      routes.set(path, { sourcePath: path, publicPath: path, canonicalPath: path, indexable });
+      const route = { sourcePath: path, publicPath: path, canonicalPath: path, indexable };
+      routes.set(path, route);
+      publicCandidates.set(route, { path: publicPath.toLowerCase(), category });
     };
+    const categoryPaths = new Map<string, string>();
     for (const category of categories) {
-      if (!category.root) addRoute(category.handle, hasProducts(String(category._id)));
+      if (category.root || !category.handle) continue;
+      const id = String(category._id);
+      const parent = parents.get(id);
+      const path = parent && !category.handle.includes('/')
+        ? `${parent}/${category.handle}`
+        : category.handle;
+      categoryPaths.set(id, path);
+      addRoute(category.handle, path, hasProducts(id));
     }
     for (const category of categories) {
-      for (const product of byCategory.get(String(category._id)) || []) {
+      const id = String(category._id);
+      for (const product of byCategory.get(id) || []) {
         if (product.seo?.seoUrl) addRoute(
           [category.handle, product.seo.seoUrl].filter(Boolean).join('/'),
+          [categoryPaths.get(id) || category.handle, product.seo.seoUrl].filter(Boolean).join('/'),
           !category.isHidden,
+          routes.get(category.handle),
         );
       }
     }
 
     const byLowercase = new Map<string, CatalogueRoute[]>();
-    for (const route of routes.values()) {
-      const lowercase = route.sourcePath.toLowerCase();
-      const matches = byLowercase.get(lowercase) || [];
-      matches.push(route);
-      byLowercase.set(lowercase, matches);
+    for (const [route, { path }] of publicCandidates) {
+      for (const key of new Set([route.sourcePath.toLowerCase(), path])) {
+        const matches = byLowercase.get(key) || [];
+        matches.push(route);
+        byLowercase.set(key, matches);
+      }
     }
-    for (const [lowercase, matches] of byLowercase) {
-      if (matches.length !== 1) continue;
-      matches[0].publicPath = lowercase;
-      matches[0].canonicalPath = lowercase;
-      routes.set(lowercase, matches[0]);
+    for (const [route, candidate] of publicCandidates) {
+      const legacy = route.sourcePath.toLowerCase();
+      const path = candidate.category &&
+        candidate.category.publicPath !== publicCandidates.get(candidate.category)?.path
+        ? legacy
+        : candidate.path;
+      if (byLowercase.get(path)?.length !== 1) continue;
+      route.publicPath = path;
+      route.canonicalPath = path;
+      routes.set(path, route);
+      if (byLowercase.get(legacy)?.length === 1) routes.set(legacy, route);
     }
     for (const category of categories) {
       const categoryRoute = routes.get(category.handle);
       const siblings = byCategory.get(String(category._id));
-      if (!category.variantCanonicals || !categoryRoute?.indexable || !siblings || siblings.length < 2) continue;
+      const enabled = category.variantCanonicals ?? Boolean(parents.get(String(category._id)));
+      if (!enabled || !categoryRoute?.indexable || !siblings || siblings.length < 2) continue;
       const productTypeId = siblings[0].productTypeId;
       if (!productTypeId || siblings.some((product) => product.productTypeId !== productTypeId)) continue;
       const rule = rulesByType.get(productTypeId);
@@ -155,52 +186,53 @@ export class CatalogueSeoService {
     properties: Map<string, { code?: string; groupVariants?: boolean }>,
   ): VariantRule | undefined {
     const ids = [...new Set((type.properties || []).map(String))];
-    const marked = ids.filter((id) => properties.get(id)?.groupVariants);
-
-    const color = type.canonicalColorProperty;
-    if (!marked.length && color) {
-      const dimensions = type.canonicalVariantProperties || [];
-      if (ids.includes(color) && dimensions.every((id) => id !== color && ids.includes(id))) {
-        return { color, dimensions };
-      }
-      return;
-    }
-
-    const memory = ids.filter((id) => properties.get(id)?.code === 'memory');
-    if (memory.length === 1 && properties.get(memory[0])?.groupVariants === undefined) {
-      marked.push(memory[0]);
-    }
-    return marked.length ? { dimensions: marked } : undefined;
+    const detected = ids.filter((id) => properties.get(id)?.code === 'color');
+    const color = type.canonicalColorProperty || (detected.length === 1 ? detected[0] : undefined);
+    if (!color || !ids.includes(color)) return;
+    const required = [...new Set([
+      ...(type.canonicalVariantProperties || []).filter((id) => ids.includes(id) && id !== color),
+      ...ids.filter((id) => id !== color &&
+        (properties.get(id)?.groupVariants || properties.get(id)?.code === 'memory')),
+    ])];
+    return { color, required };
   }
 
   private applyVariantCanonicals(
     category: CatalogueRoute,
     products: ProductRow[],
-    { color, dimensions }: VariantRule,
+    { color, required }: VariantRule,
     routes: Map<string, CatalogueRoute>,
   ) {
-    const groups = new Map<string, { color?: string; route: CatalogueRoute }[]>();
-    const seen = new Set<CatalogueRoute>();
+    const groups = new Map<string, { color: string; route: CatalogueRoute }[]>();
+    const known = new Set(products.flatMap((product) => (product.productProps || [])
+      .map((prop) => String(prop.productTypePropertyId))));
+    const requiredValues = required.filter((id) => known.has(id));
+    const slugs = new Map<string, number>();
+    for (const product of products) {
+      const slug = product.seo?.seoUrl?.toLowerCase();
+      if (slug) slugs.set(slug, (slugs.get(slug) || 0) + 1);
+    }
     for (const product of products) {
       const slug = product.seo?.seoUrl;
-      const route = slug && routes.get(`${category.sourcePath}/${slug}`);
+      if (!slug || slugs.get(slug.toLowerCase()) !== 1) continue;
+      const route = routes.get(`${category.sourcePath}/${slug}`);
       const values = new Map((product.productProps || []).map((prop) => [
         String(prop.productTypePropertyId), normalizedValue(prop.value),
       ]));
-      const colorValue = color ? values.get(color) : undefined;
-      const signature = dimensions.map((id) => values.get(id));
-      if (!route || (color && !colorValue) || signature.some((value) => value === undefined) || seen.has(route)) return;
-      seen.add(route);
+      const colorValue = values.get(color);
+      if (!route || !colorValue || requiredValues.some((id) => values.get(id) === undefined)) continue;
+      values.delete(color);
+      const signature = [...values].sort(([a], [b]) => a.localeCompare(b));
       const key = JSON.stringify(signature);
       const group = groups.get(key) || [];
       group.push({ color: colorValue, route });
       groups.set(key, group);
     }
+    const keepConfiguration = groups.size > 1 || [...groups.values()].flat().length !== products.length;
     for (const group of groups.values()) {
-      const variants = color ? new Set(group.map((entry) => entry.color)).size : group.length;
-      if (variants < 2) continue;
-      const target = groups.size === 1 ? category.publicPath : group[0].route.publicPath;
-      for (const entry of group) entry.route.canonicalPath = target;
+      if (new Set(group.map((entry) => entry.color)).size < 2) continue;
+      const variants = keepConfiguration ? group.slice(1) : group;
+      for (const entry of variants) entry.route.canonicalPath = category.publicPath;
     }
   }
 }
