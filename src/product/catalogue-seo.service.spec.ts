@@ -1,6 +1,12 @@
 import { CatalogueSeoService } from './catalogue-seo.service';
 
-const category = { _id: 'model', handle: 'iPhone-duo', variantCanonicals: true };
+type CategoryFixture = {
+  _id: string;
+  handle: string;
+  children?: string[];
+  variantCanonicals?: boolean;
+};
+const category: CategoryFixture = { _id: 'model', handle: 'iPhone-duo', variantCanonicals: true };
 const type = {
   _id: 'phone',
   properties: ['colour', 'memory', 'sim'],
@@ -56,8 +62,8 @@ describe('catalogue SEO routes', () => {
       sku('003', 'Black', '512 GB'),
       sku('004', 'Blue', '512 GB'),
     ], [category], automaticType);
-    expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo/001' });
-    expect(await service.find('iphone-duo/004')).toMatchObject({ canonicalPath: 'iphone-duo/003' });
+    expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo' });
+    expect(await service.find('iphone-duo/004')).toMatchObject({ canonicalPath: 'iphone-duo' });
     expect(await service.indexablePaths()).toEqual(['iphone-duo', 'iphone-duo/001', 'iphone-duo/003']);
   });
 
@@ -75,28 +81,21 @@ describe('catalogue SEO routes', () => {
       category,
       { _id: 'accessories', handle: 'accessories', variantCanonicals: false },
     ], automaticType, [
+      { _id: 'colour', code: 'color' },
       { _id: 'memory', code: 'memory', groupVariants: true },
       { _id: 'sim', groupVariants: true },
     ]);
 
-    expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo/001' });
-    expect(await service.find('iphone-duo/004')).toMatchObject({ canonicalPath: 'iphone-duo/003' });
+    expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo' });
+    expect(await service.find('iphone-duo/004')).toMatchObject({ canonicalPath: 'iphone-duo' });
     expect(await service.find('accessories/002')).toMatchObject({ canonicalPath: 'accessories/002' });
   });
 
-  it('honors an explicit decision to exclude memory from grouping', async () => {
+  it('does not guess an automatic rule if the product type has no color code', async () => {
     const service = makeService([
       sku('001', 'Black', '256 GB'),
       sku('002', 'Blue', '256 GB'),
-    ], [category], automaticType, [{ _id: 'memory', code: 'memory', groupVariants: false }]);
-    expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo/002' });
-  });
-
-  it('does not guess an automatic rule if the product type has no memory code', async () => {
-    const service = makeService([
-      sku('001', 'Black', '256 GB'),
-      sku('002', 'Blue', '256 GB'),
-    ], [category], automaticType, [{ _id: 'colour', code: 'color' }]);
+    ], [category], automaticType, [{ _id: 'memory', code: 'memory' }]);
     expect(await service.find('iphone-duo/002')).toMatchObject({ canonicalPath: 'iphone-duo/002' });
   });
 
@@ -109,7 +108,7 @@ describe('catalogue SEO routes', () => {
     ]);
     expect(await service.find('iPhone-duo/002')).toMatchObject({
       publicPath: 'iphone-duo/002',
-      canonicalPath: 'iphone-duo/001',
+      canonicalPath: 'iphone-duo',
     });
     expect(await service.indexablePaths()).toEqual([
       'iphone-duo', 'iphone-duo/001', 'iphone-duo/003', 'iphone-duo/004',
@@ -143,5 +142,37 @@ describe('catalogue SEO routes', () => {
     ]);
     expect(await service.find('iPhone-duo')).toMatchObject({ publicPath: 'iPhone-duo' });
     expect(await service.find('iphone-duo')).toMatchObject({ publicPath: 'iphone-duo' });
+  });
+
+  it('moves model and SKU paths together and exposes the new addresses throughout the catalogue', async () => {
+    const model = { _id: 'model', handle: 'iPhone-duo' };
+    const section = { _id: 'section', handle: 'iphone', children: ['model'] };
+    const service = makeService([
+      sku('001', 'Black', '256 GB'),
+      sku('002', 'Blue', '256 GB'),
+    ], [model, section], automaticType);
+    expect(await service.find('iPhone-duo')).toMatchObject({
+      sourcePath: 'iPhone-duo', publicPath: 'iphone/iphone-duo',
+    });
+    expect(await service.find('iPhone-duo/001')).toMatchObject({
+      sourcePath: 'iPhone-duo/001', publicPath: 'iphone/iphone-duo/001',
+    });
+    expect(await service.find('iphone/iphone-duo/002')).toMatchObject({
+      sourcePath: 'iPhone-duo/002', canonicalPath: 'iphone/iphone-duo',
+    });
+    expect(await service.indexablePaths()).toEqual(['iphone', 'iphone/iphone-duo']);
+    expect(await service.publicTree({ ...section, children: [model] } as never))
+      .toMatchObject({ children: [{ handle: 'iphone/iphone-duo' }] });
+  });
+
+  it('preserves a model at its old address if the new path already belongs to another model', async () => {
+    const model = { _id: 'model', handle: 'iphone-duo' };
+    const service = makeService([sku('001', 'Black', '256 GB')], [
+      model,
+      { _id: 'section', handle: 'iphone', children: ['model'] },
+      { _id: 'other', handle: 'iphone/iphone-duo' },
+    ]);
+    expect(await service.find('iphone-duo')).toMatchObject({ publicPath: 'iphone-duo' });
+    expect(await service.find('iphone/iphone-duo')).toMatchObject({ sourcePath: 'iphone/iphone-duo' });
   });
 });
